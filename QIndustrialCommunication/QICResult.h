@@ -82,30 +82,10 @@ public:
 	/// @tparam U Content的元组索引值,从0开始
 	/// @return 
 	template <std::size_t Index>
-	auto GetContent() const
+	auto getContent() const
 	{
 		static_assert(Index<std::tuple_size_v<decltype(Content)>, "Index out of bounds");
 		return std::get<Index>(Content);
-	}
-	auto GetContent1() const
-	{
-		return GetContent<0>();
-	}
-	auto GetContent2() const
-	{
-		return GetContent<1>();
-	}
-	auto GetContent3() const
-	{
-		return GetContent<2>();
-	}
-	auto GetContent4() const
-	{
-		return GetContent<3>();
-	}
-	auto GetContent5() const
-	{
-		return GetContent<4>();
 	}
 
 	/// @brief 
@@ -118,7 +98,7 @@ public:
 	/// @tparam Index 索引
 	/// @param value 类型为U的对象值
 	template <std::size_t Index, typename U>
-	void SetContent(U&& value)
+	void setContent(U&& value)
 	{
 		// 编译时检查类型匹配
 		static_assert(std::is_same_v<std::tuple_element_t<Index, std::tuple<T...>>, std::decay_t<U>>,

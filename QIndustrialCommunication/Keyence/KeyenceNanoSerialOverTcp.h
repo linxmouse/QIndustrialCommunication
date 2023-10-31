@@ -12,130 +12,32 @@
 #include <QDebug>
 #include <QHostAddress>
 #include "QICResult.h"
-#include "NetworkDevice.h"
+#include "DeviceBase.h"
 
-class KeyenceNanoSerialOverTcp : public NetworkDevice
+class KeyenceNanoSerialOverTcp : public DeviceBase
 {
 	Q_OBJECT
 
 public:
-	KeyenceNanoSerialOverTcp(QString ipAddress, int port, bool isPersistentConn, bool enableSendRecvLog, int connectTimeOut = 3000, int receiveTimeOut = 3000, QObject* parent = nullptr);
+	KeyenceNanoSerialOverTcp(QString ipAddress, int port, bool isPersistentConn, bool enableSendRecvLog, 
+		int connectTimeOut = 3000, int receiveTimeOut = 3000, QObject* parent = nullptr);
 	~KeyenceNanoSerialOverTcp();
 
 public:
 	/// @brief 让基类中名为 Write 的所有函数在派生类中都是可见的，与派生类自己定义的 Write 函数重载（Overload），而不是被隐藏（Hide）
-	using NetworkDevice::Write;
-	using NetworkDevice::ReadBool;
+	using DeviceBase::Write;
+	/// @brief 让基类中名为 ReadBool 的所有函数在派生类中都是可见的，与派生类自己定义的 ReadBool 函数重载（Overload），而不是被隐藏（Hide）
+	using DeviceBase::ReadBool;
 
-	QICResult<QByteArray> Read(const QString& address, ushort length) override
-	{
-		// 构建读取数据包
-		QICResult<QByteArray> buildResult = BuildReadPacket(address, length);
-		if (!buildResult.IsSuccess)
-		{
-			return QICResult<QByteArray>::CreateFailedResult(buildResult);
-		}
-		// 从核心服务器读取
-		QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.GetContent<0>());
-		if (!readResult.IsSuccess)
-		{
-			return QICResult<QByteArray>::CreateFailedResult(readResult);
-		}
-		// 检查PLC写入响应协议格式
-		QICResult checkResult = CheckPlcReadResponse(readResult.GetContent<0>());
-		if (!checkResult.IsSuccess)
-		{
-			return QICResult<QByteArray>::CreateFailedResult(checkResult);
-		}
-		// 分析地址
-		QICResult<QString, int> analysisResult = KvAnalysisAddress(address);
-		if (!analysisResult.IsSuccess)
-		{
-			return QICResult<QByteArray>::CreateFailedResult(analysisResult);
-		}
+	QICResult<QByteArray> Read(const QString& address, ushort length) override;
 
-		// 解析数据
-		return ParsedData(analysisResult.GetContent<0>(), readResult.GetContent<0>());
-	}
+	QICResult<QVector<bool>> ReadBool(const QString& address, ushort length) override;
 
-	QICResult<QVector<bool>> ReadBool(const QString& address, ushort length) override
-	{
-		// 构建读取数据包
-		auto buildResult = BuildReadPacket(address, length);
-		if (!buildResult.IsSuccess)
-		{
-			return QICResult<QVector<bool>>::CreateFailedResult(buildResult);
-		}
-		// 从核心服务器读取
-		auto readResult = ReadFromCoreServer(buildResult.GetContent<0>());
-		if (!readResult.IsSuccess)
-		{
-			return QICResult<QVector<bool>>::CreateFailedResult(readResult);
-		}
-		// 检查PLC写入响应协议格式
-		auto checkResult = CheckPlcReadResponse(readResult.GetContent<0>());
-		if (!checkResult.IsSuccess)
-		{
-			return QICResult<QVector<bool>>::CreateFailedResult(checkResult);
-		}
-		// 地址分析
-		auto addressResult = KvAnalysisAddress(address);
-		if (!addressResult.IsSuccess)
-		{
-			return QICResult<QVector<bool>>::CreateFailedResult(addressResult);
-		}
+	QICResult<> Write(const QString& address, const QByteArray& value) override;
 
-		// 解析数据
-		return ParsedBoolData(addressResult.GetContent<0>(), readResult.GetContent<0>());
-	}
+	QICResult<> Write(const QString& address, bool value) override;
 
-	QICResult<> Write(const QString& address, const QByteArray& value) override
-	{
-		// 构建写入数据包
-		QICResult<QByteArray> buildResult = BuildWritePacket(address, value);
-		if (!buildResult.IsSuccess)
-		{
-			return QICResult<>::CreateFailedResult(buildResult);
-		}
-		// 从核心服务器读取响应
-		QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.GetContent<0>());
-		if (!readResult.IsSuccess)
-		{
-			return QICResult<>::CreateFailedResult(readResult);
-		}
-		// 检查PLC写入响应协议格式
-		QICResult<> checkResult = CheckPlcWriteResponse(readResult.GetContent<0>());
-		if (!checkResult.IsSuccess)
-		{
-			return QICResult<>::CreateFailedResult(checkResult);
-		}
-
-		return QICResult<>::CreateSuccessResult();
-	}
-
-	QICResult<> Write(const QString& address, bool value) override
-	{
-		// 构建写入数据包
-		QICResult<QByteArray> buildResult = BuildWritePacket(address, value);
-		if (!buildResult.IsSuccess)
-		{
-			return QICResult<>::CreateFailedResult(buildResult);
-		}
-		// 从核心服务器读取响应
-		QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.GetContent<0>());
-		if (!readResult.IsSuccess)
-		{
-			return QICResult<>::CreateFailedResult(readResult);
-		}
-		// 检查PLC写入响应协议格式
-		QICResult<> checkResult = CheckPlcWriteResponse(readResult.GetContent<0>());
-		if (!checkResult.IsSuccess)
-		{
-			return QICResult<>::CreateFailedResult(checkResult);
-		}
-
-		return QICResult<>::CreateSuccessResult();
-	}
+	QICResult<> Write(const QString& address, QVector<bool> value) override;
 
 	friend QDebug operator<<(QDebug debug, const KeyenceNanoSerialOverTcp& kvNano)
 	{
@@ -148,15 +50,16 @@ public:
 protected:
 	QICResult<> InitializationOnConnect(QTcpSocket* socket) override
 	{
+		if (!socket || !socket->isValid()) return QICResult<>::CreateFailedResult("socket is null/invalid.");
 		QByteArray cmd = "CR\r";
 		QICResult<QByteArray> result = ReadFromCoreServer(socket, cmd);
 		if (!result.IsSuccess) return QICResult<>::CreateFailedResult(result);
-
 		return QICResult<>::CreateSuccessResult();
 	}
 
 	QICResult<> ReleaseOnDisconnect(QTcpSocket* socket) override
 	{
+		if (!socket || !socket->isValid()) return QICResult<>::CreateFailedResult("socket is null/invalid.");
 		QByteArray cmd = "CQ\r";
 		QICResult<QByteArray> result = ReadFromCoreServer(socket, cmd);
 		if (!result.IsSuccess) return QICResult<>::CreateFailedResult(result);
@@ -197,24 +100,18 @@ private:
 	/// @return 读取数据包
 	QICResult<QByteArray> BuildReadPacket(const QString& address, ushort length)
 	{
-		QICResult<QString, int> result = KvAnalysisAddress(address);
-		if (!result.IsSuccess)
-		{
-			return QICResult<QByteArray>::CreateFailedResult(result);
-		}
-
-		if ((result.GetContent<0>() == "CTH" || result.GetContent<0>() == "CTC" ||
-			result.GetContent<0>() == "C" || result.GetContent<0>() == "T") && length > 1)
+		QICResult<QString, int> result = AnalysisAddress(address);
+		if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
+		if ((result.getContent<0>() == "CTH" || result.getContent<0>() == "CTC" ||
+			result.getContent<0>() == "C" || result.getContent<0>() == "T") && length > 1)
 		{
 			length = static_cast<ushort>(length / 2);
 		}
-
 		QString packet = QString("RDS %1%2 %3\r")
-			.arg(result.GetContent<0>())
-			.arg(result.GetContent<1>())
+			.arg(result.getContent<0>())
+			.arg(result.getContent<1>())
 			.arg(length);
 		QByteArray bytes = packet.toLatin1();
-
 		return QICResult<QByteArray>::CreateSuccessResult(bytes);
 	}
 
@@ -224,21 +121,17 @@ private:
 	/// @return 写入数据包
 	QICResult<QByteArray> BuildWritePacket(const QString& address, const QByteArray& value)
 	{
-		QICResult<QString, int> result = KvAnalysisAddress(address);
-		if (!result.IsSuccess)
-		{
-			return QICResult<QByteArray>::CreateFailedResult(result);
-		}
-
+		QICResult<QString, int> result = AnalysisAddress(address);
+		if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
 		QString packet;
 		QTextStream stream(&packet);
-		stream << "WRS " << result.GetContent<0>() << result.GetContent<1>() << " ";
-		if (result.GetContent<0>() == "DM" ||
-			result.GetContent<0>() == "CM" ||
-			result.GetContent<0>() == "TM" ||
-			result.GetContent<0>() == "EM" ||
-			result.GetContent<0>() == "FM" ||
-			result.GetContent<0>() == "Z")
+		stream << "WRS " << result.getContent<0>() << result.getContent<1>() << " ";
+		if (result.getContent<0>() == "DM" ||
+			result.getContent<0>() == "CM" ||
+			result.getContent<0>() == "TM" ||
+			result.getContent<0>() == "EM" ||
+			result.getContent<0>() == "FM" ||
+			result.getContent<0>() == "Z")
 		{
 			int num = value.size() / 2;
 			stream << num << " ";
@@ -250,9 +143,9 @@ private:
 				if (i != num - 1) stream << " ";
 			}
 		}
-		else if (result.GetContent<0>() == "T" ||
-			result.GetContent<0>() == "C" ||
-			result.GetContent<0>() == "CTH")
+		else if (result.getContent<0>() == "T" ||
+			result.getContent<0>() == "C" ||
+			result.getContent<0>() == "CTH")
 		{
 			int num = value.size() / 4;
 			stream << num << " ";
@@ -265,7 +158,6 @@ private:
 			}
 		}
 		stream << "\r";
-
 		return QICResult<QByteArray>::CreateSuccessResult(packet.toLatin1());
 	}
 
@@ -275,18 +167,37 @@ private:
 	/// @return 写入数据包
 	QICResult<QByteArray> BuildWritePacket(const QString& address, bool value)
 	{
-		QICResult<QString, int> result = KvAnalysisAddress(address);
-		if (!result.IsSuccess)
-		{
-			return QICResult<QByteArray>::CreateFailedResult(result);
-		}
-
+		QICResult<QString, int> result = AnalysisAddress(address);
+		if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
 		QString packet;
 		QTextStream stream(&packet);
 		if (value) stream << "ST ";
 		else stream << "RS ";
-		stream << result.GetContent<0>() << result.GetContent<1>() << "\r";
+		stream << result.getContent<0>() << result.getContent<1>() << "\r";
+		return QICResult<QByteArray>::CreateSuccessResult(packet.toLatin1());
+	}
 
+	/// @brief 构建写入数据包
+	/// @param address 字符串地址
+	/// @param value 写入的值
+	/// @return 写入数据包
+	QICResult<QByteArray> BuildWritePacket(const QString& address, QVector<bool> values)
+	{
+		QICResult<QString, int> result = AnalysisAddress(address);
+		if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
+		QString packet;
+		QTextStream stream(&packet);
+		stream << "WRS "
+			<< result.getContent<0>()
+			<< result.getContent<1>()
+			<< " "
+			<< values.length();
+		for (auto& value: values)
+		{
+			auto tf = value ? "1" : "0";
+			stream << " " << tf;
+		}
+		stream << "\r";
 		return QICResult<QByteArray>::CreateSuccessResult(packet.toLatin1());
 	}
 
@@ -401,7 +312,7 @@ private:
 	/// @brief 分析地址信息
 	/// @param address 
 	/// @return 
-	QICResult<QString, int> KvAnalysisAddress(QString address)
+	QICResult<QString, int> AnalysisAddress(QString address)
 	{
 		try
 		{

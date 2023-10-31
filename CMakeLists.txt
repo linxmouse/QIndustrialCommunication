@@ -13,3 +13,4 @@ project ("QIndustrialCommunication")
 
 # 包含子项目。
 add_subdirectory ("QIndustrialCommunication")
+add_subdirectory ("QICDemo")

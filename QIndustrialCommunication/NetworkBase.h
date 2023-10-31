@@ -7,29 +7,24 @@
 #include <QTextCodec>
 #include "QICResult.h"
 #include "ByteConverterBase.h"
-#include "ByteConverterHelper.h"
+#include "GetResultHelper.h"
 
-class NetworkDeviceBase : public QObject
+class NetworkBase : public QObject
 {
 public:
-	explicit NetworkDeviceBase(QObject* parent = nullptr)
-		: wordLenght(1), byteConverter(nullptr), QObject(parent)
+	explicit NetworkBase(QObject* parent = nullptr)
+		: WordLenght(1), ByteConverter(nullptr), QObject(parent)
 	{
 	}
-	virtual ~NetworkDeviceBase()
+	virtual ~NetworkBase()
 	{
-		if (byteConverter) delete byteConverter;
+		if (ByteConverter) delete ByteConverter;
 	}
 
 public:
-	virtual QICResult<QByteArray> Read(const QString& address, ushort length)
-	{
-		return QICResult<QByteArray>::CreateFailedResult("Not Supported.");
-	}	
-	virtual QICResult<> Write(const QString& address, const QByteArray& value)
-	{
-		return QICResult<>::CreateFailedResult("Not Supported.");
-	}
+	virtual QICResult<QByteArray> Read(const QString& address, ushort length) = 0;
+	virtual QICResult<> Write(const QString& address, const QByteArray& value) = 0;
+	
 	virtual QICResult<> Write(const QString& address, QVector<bool> value)
 	{
 		return QICResult<>::CreateFailedResult("Not Supported.");
@@ -47,133 +42,143 @@ public:
 	{
 		auto result = ReadBool(address, 1);
 		if (!result.IsSuccess) return QICResult<bool>::CreateFailedResult(result);
-		return QICResult<bool>::CreateSuccessResult(result.GetContent1().at(0));
+		return QICResult<bool>::CreateSuccessResult(result.getContent<0>().at(0));
 	}
 
 	virtual QICResult<QVector<short>> ReadInt16(QString address, ushort length)
 	{
-#if 0 // ByteConverterHelper::GetResultFromBytes展开形式
+#if 0 
+		// 展开形式
 		auto result = Read(address, length * wordLenght);
 		if (!result.IsSuccess) return QICResult<QVector<short>>::CreateFailedResult(result);
-		auto value = byteConverter->ConvertToInt16(result.GetContent1(), 0, length);
+		auto value = byteConverter->ConvertToInt16(result.GetContent<0>(), 0, length);
 		return QICResult<QVector<short>>::CreateSuccessResult(value);
-#endif // ByteConverterHelper::GetResultFromBytes展开形式
-		auto result = Read(address, length * wordLenght);
+#else
+		auto result = Read(address, length * WordLenght);
 		auto lambda = [=](const QByteArray& byteArray)
 			{
-				return byteConverter->ConvertToInt16(byteArray, 0, length);
+				return ByteConverter->ConvertToInt16(byteArray, 0, length);
 			};
-		return ByteConverterHelper::GetResultFromBytes<QVector<short>>(result, lambda);
+		return GetResultHelper::GetResultFromBytes<QVector<short>>(result, lambda);
+#endif
 	}
 	QICResult<short> ReadInt16(const QString& address)
 	{
+#if 0
+		// 展开形式
 		auto result = ReadInt16(address, 1);
-		return ByteConverterHelper::GetResultFromArray(result);
+		if (!result.IsSuccess) return QICResult<short>::CreateFailedResult(result);
+		auto content = result.GetContent<0>();
+		return QICResult<short>::CreateSuccessResult(content.at(0));
+#else
+		auto result = ReadInt16(address, 1);
+		return GetResultHelper::GetResultFromArray(result);
+#endif
 	}
 
 	virtual QICResult<QVector<ushort>> ReadUInt16(const QString& address, ushort length)
 	{
-		auto result = Read(address, length * wordLenght);
+		auto result = Read(address, length * WordLenght);
 		auto lambda = [=](const QByteArray& byteArray)
 			{
-				return byteConverter->ConvertToUInt16(byteArray, 0, length);
+				return ByteConverter->ConvertToUInt16(byteArray, 0, length);
 			};
-		return ByteConverterHelper::GetResultFromBytes<QVector<ushort>>(result, lambda);
+		return GetResultHelper::GetResultFromBytes<QVector<ushort>>(result, lambda);
 	}
 	QICResult<ushort> ReadUInt16(const QString& address)
 	{
 		auto result = ReadUInt16(address, 1);
-		return ByteConverterHelper::GetResultFromArray(result);
+		return GetResultHelper::GetResultFromArray(result);
 	}
 
 	virtual QICResult<QVector<int>> ReadInt32(const QString& address, ushort length)
 	{
-		auto result = Read(address, length * wordLenght * 2);
+		auto result = Read(address, length * WordLenght * 2);
 		auto lambda = [=](const QByteArray& byteArray)
 			{
-				return byteConverter->ConvertToInt32(byteArray, 0, length);
+				return ByteConverter->ConvertToInt32(byteArray, 0, length);
 			};
-		return ByteConverterHelper::GetResultFromBytes<QVector<int>>(result, lambda);
+		return GetResultHelper::GetResultFromBytes<QVector<int>>(result, lambda);
 	}
 	QICResult<int> ReadInt32(const QString& address)
 	{
 		auto result = ReadInt32(address, 1);
-		return ByteConverterHelper::GetResultFromArray(result);
+		return GetResultHelper::GetResultFromArray(result);
 	}
 
 	virtual QICResult<QVector<uint>> ReadUInt32(const QString& address, ushort length)
 	{
-		auto result = Read(address, length * wordLenght * 2);
+		auto result = Read(address, length * WordLenght * 2);
 		auto lambda = [=](const QByteArray& byteArray)
 			{
-				return byteConverter->ConvertToUInt32(byteArray, 0, length);
+				return ByteConverter->ConvertToUInt32(byteArray, 0, length);
 			};
-		return ByteConverterHelper::GetResultFromBytes<QVector<uint>>(result, lambda);
+		return GetResultHelper::GetResultFromBytes<QVector<uint>>(result, lambda);
 	}
 	QICResult<uint> ReadUInt32(const QString& address)
 	{
 		auto result = ReadUInt32(address, 1);
-		return ByteConverterHelper::GetResultFromArray(result);
+		return GetResultHelper::GetResultFromArray(result);
 	}
 
 	virtual QICResult<QVector<float>> ReadFloat(const QString& address, ushort length)
 	{
-		auto result = Read(address, length * wordLenght * 2);
+		auto result = Read(address, length * WordLenght * 2);
 		auto lambda = [=](const QByteArray& ba)
 			{
-				return byteConverter->ConvertToFloat(ba, 0, length);
+				return ByteConverter->ConvertToFloat(ba, 0, length);
 			};
-		return ByteConverterHelper::GetResultFromBytes<QVector<float>>(result, lambda);
+		return GetResultHelper::GetResultFromBytes<QVector<float>>(result, lambda);
 	}
 	QICResult<float> ReadFloat(const QString& address)
 	{
 		auto result = ReadFloat(address, 1);
-		return ByteConverterHelper::GetResultFromArray(result);
+		return GetResultHelper::GetResultFromArray(result);
 	}
 
 	virtual QICResult<QVector<qint64>> ReadInt64(const QString& address, ushort length)
 	{
-		auto result = Read(address, length * wordLenght * 4);
+		auto result = Read(address, length * WordLenght * 4);
 		auto lambda = [=](const QByteArray& byteArray)
 			{
-				return byteConverter->ConvertToInt64(byteArray, 0, length);
+				return ByteConverter->ConvertToInt64(byteArray, 0, length);
 			};
-		return ByteConverterHelper::GetResultFromBytes<QVector<qint64>>(result, lambda);
+		return GetResultHelper::GetResultFromBytes<QVector<qint64>>(result, lambda);
 	}
 	QICResult<qint64> ReadInt64(const QString& address)
 	{
 		auto result = ReadInt64(address, 1);
-		return ByteConverterHelper::GetResultFromArray(result);
+		return GetResultHelper::GetResultFromArray(result);
 	}
 
 	virtual QICResult<QVector<quint64>> ReadUInt64(const QString& address, ushort length)
 	{
-		auto result = Read(address, length * wordLenght * 4);
+		auto result = Read(address, length * WordLenght * 4);
 		auto lambda = [=](const QByteArray& ba)
 			{
-				return byteConverter->ConvertToUInt64(ba, 0, length);
+				return ByteConverter->ConvertToUInt64(ba, 0, length);
 			};
-		return ByteConverterHelper::GetResultFromBytes<QVector<quint64>>(result, lambda);
+		return GetResultHelper::GetResultFromBytes<QVector<quint64>>(result, lambda);
 	}
 	QICResult<quint64> ReadUInt64(const QString& address)
 	{
 		auto result = ReadUInt64(address, 1);
-		return ByteConverterHelper::GetResultFromArray(result);
+		return GetResultHelper::GetResultFromArray(result);
 	}
 
 	virtual QICResult<QVector<double>> ReadDouble(const QString& address, ushort length)
 	{
-		auto result = Read(address, length * wordLenght * 4);
+		auto result = Read(address, length * WordLenght * 4);
 		auto lambda = [=](const QByteArray& ba)
 			{
-				return byteConverter->ConvertToDouble(ba, 0, length);
+				return ByteConverter->ConvertToDouble(ba, 0, length);
 			};
-		return ByteConverterHelper::GetResultFromBytes<QVector<double>>(result, lambda);
+		return GetResultHelper::GetResultFromBytes<QVector<double>>(result, lambda);
 	}
 	QICResult<double> ReadDouble(const QString& address)
 	{
 		auto result = ReadDouble(address, 1);
-		return ByteConverterHelper::GetResultFromArray(result);
+		return GetResultHelper::GetResultFromArray(result);
 	}
 
 	virtual QICResult<QString> ReadString(const QString& address, ushort length, QTextCodec* codec)
@@ -181,72 +186,72 @@ public:
 		auto result = Read(address, length);
 		auto lambda = [=](const QByteArray& ba)
 			{
-				return byteConverter->ConvertToString(ba, 0, ba.length(), codec);
+				return ByteConverter->ConvertToString(ba, 0, ba.length(), codec);
 			};
-		return ByteConverterHelper::GetResultFromBytes<QString>(result, lambda);
+		return GetResultHelper::GetResultFromBytes<QString>(result, lambda);
 	}
 	QICResult<QString> ReadString(const QString& address, ushort length) { return ReadString(address, length, QTextCodec::codecForName("ASCII")); }
 
 	virtual QICResult<> Write(const QString& address, QVector<short> value)
 	{
-		auto bytes = byteConverter->PackByteArray(value);
+		auto bytes = ByteConverter->PackByteArray(value);
 		return Write(address, bytes);
 	}
 	QICResult<> Write(const QString& address, short value) { return Write(address, QVector{ value }); }
 
 	virtual QICResult<> Write(const QString& address, QVector<ushort> value)
 	{
-		auto bytes = byteConverter->PackByteArray(value);
+		auto bytes = ByteConverter->PackByteArray(value);
 		return Write(address, bytes);
 	}
 	QICResult<> Write(const QString& address, ushort value) { return Write(address, QVector{ value }); }
 
 	virtual QICResult<> Write(const QString& address, QVector<int> value)
 	{
-		auto bytes = byteConverter->PackByteArray(value);
+		auto bytes = ByteConverter->PackByteArray(value);
 		return Write(address, bytes);
 	}
 	QICResult<> Write(const QString& address, int value) { return Write(address, QVector{ value }); }
 
 	virtual QICResult<> Write(const QString& address, QVector<uint> value)
 	{
-		auto bytes = byteConverter->PackByteArray(value);
+		auto bytes = ByteConverter->PackByteArray(value);
 		return Write(address, bytes);
 	}
 	QICResult<> Write(const QString& address, uint value) { return Write(address, QVector{ value }); }
 
 	virtual QICResult<> Write(const QString& address, QVector<float> value)
 	{
-		auto bytes = byteConverter->PackByteArray(value);
+		auto bytes = ByteConverter->PackByteArray(value);
 		return Write(address, bytes);
 	}
 	QICResult<> Write(const QString& address, float value) { return Write(address, QVector{ value }); }
 
 	virtual QICResult<> Write(const QString& address, QVector<qint64> value)
 	{
-		auto bytes = byteConverter->PackByteArray(value);
+		auto bytes = ByteConverter->PackByteArray(value);
 		return Write(address, bytes);
 	}
 	QICResult<> WriteInt64(const QString& address, qint64 value) { return Write(address, QVector{ value }); }
 
 	virtual QICResult<> Write(const QString& address, QVector<quint64> value)
 	{
-		auto bytes = byteConverter->PackByteArray(value);
+		auto bytes = ByteConverter->PackByteArray(value);
 		return Write(address, bytes);
 	}
 	QICResult<> Write(const QString& address, quint64 value) { return Write(address, QVector{ value }); }
 
 	virtual QICResult<> Write(const QString& address, QVector<double> value)
 	{
-		auto bytes = byteConverter->PackByteArray(value);
+		auto bytes = ByteConverter->PackByteArray(value);
 		return Write(address, bytes);
 	}
 	QICResult<> Write(const QString& address, double value) { return Write(address, QVector{ value }); }
 	
 	virtual QICResult<> WriteString(const QString& address, QString value, QTextCodec* codec)
 	{
-		auto bytes = byteConverter->PackByteArray(value, codec);
-		if (wordLenght == 1)
+		auto bytes = ByteConverter->PackByteArray(value, codec);
+		if (WordLenght == 1)
 		{
 			// 扩展到偶数长度
 			if (bytes.size() % 2 != 0) bytes.append('\0');
@@ -256,8 +261,8 @@ public:
 	QICResult<> WriteString(const QString& address, QString value) { return WriteString(address, value, QTextCodec::codecForName("ASCII")); }
 	virtual QICResult<> WriteString(const QString& address, QString value, int length, QTextCodec* codec)
 	{
-		auto bytes = byteConverter->PackByteArray(value, codec);
-		if (wordLenght == 1)
+		auto bytes = ByteConverter->PackByteArray(value, codec);
+		if (WordLenght == 1)
 		{
 			// 扩展到偶数长度
 			if (bytes.size() % 2 != 0) bytes.append('\0');
@@ -267,17 +272,7 @@ public:
 	}
 	QICResult<> WriteString(const QString& address, QString value, int length) { return WriteString(address, value, length, QTextCodec::codecForName("ASCII")); }
 
-protected:
-	/// @brief 判断当前平台是否为小端
-	/// @return 小端如果为true，大端如果为false
-	bool isLittleEndian()
-	{
-		quint16 number = 1;
-		quint8* numPtr = (quint8*)&number;
-		return (numPtr[0] == 1);
-	}
-
-protected:
-	ushort wordLenght;
-	ByteConverterBase* byteConverter;
+public:
+	ushort WordLenght;
+	ByteConverterBase* ByteConverter;
 };

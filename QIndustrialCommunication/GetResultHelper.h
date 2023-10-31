@@ -8,7 +8,7 @@
 #include "DataFormat.h"
 #include "QICResult.h"
 
-class ByteConverterHelper
+class GetResultHelper
 {
 public:
 	/**
@@ -27,14 +27,14 @@ public:
 		{
 			if (result.IsSuccess)
 			{
-				return QICResult<TResult>::CreateSuccessResult(func(result.GetContent1()));
+				return QICResult<TResult>::CreateSuccessResult(func(result.getContent<0>()));
 			}
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
 		catch (const QException& ex)
 		{
 			QString errorMessage = QString("Data transform error: Length(%1) %2")
-				.arg(result.GetContent1().size())
+				.arg(result.getContent<0>().size())
 				.arg(ex.what());
 			return QICResult<TResult>::CreateFailedResult(errorMessage);
 		}
@@ -50,7 +50,7 @@ public:
 	template <typename TResult>
 	static QICResult<TResult> GetResultFromArray(const QICResult<QVector<TResult>>& result)
 	{
-		auto lambda = [](const QVector<TResult>& m) -> TResult { return m[0]; };
+		auto lambda = [](const QVector<TResult>& m) -> TResult { return m.at(0); };
 		return GetSuccessResultFromOther<TResult, QVector<TResult>>(result, lambda);
 	}
 
@@ -72,10 +72,9 @@ public:
 		{
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
-		return QICResult<TResult>::CreateSuccessResult(func(result.GetContent1()));
+		return QICResult<TResult>::CreateSuccessResult(func(result.getContent<0>()));
 	}
 
-#if 0 // 暂时未使用
 	template <typename TIn>
 	static QICResult<> GetResultFromOther(const QICResult<TIn>& result, std::function<QICResult<>(TIn)> func)
 	{
@@ -83,7 +82,7 @@ public:
 		{
 			return QICResult<>::CreateFailedResult(result);
 		}
-		return func(result.GetContent1());
+		return func(result.getContent<0>());
 	}
 
 	/*template <typename TResult, typename TIn>
@@ -93,7 +92,7 @@ public:
 		{
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
-		return func(result.GetContent1());
+		return func(result.getContent<0>());
 	}
 
 	template <typename TResult, typename TIn1, typename TIn2>
@@ -105,13 +104,13 @@ public:
 		{
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
-		QICResult<TIn2> intermediateResult = trans1(result.GetContent1());
+		QICResult<TIn2> intermediateResult = trans1(result.getContent<0>());
 		if (!intermediateResult.IsSuccess)
 		{
 			return QICResult<TResult>::CreateFailedResult(intermediateResult);
 		}
 
-		return trans2(intermediateResult.GetContent1());
+		return trans2(intermediateResult.getContent<0>());
 	}
 
 	template <typename TResult, typename TIn1, typename TIn2, typename TIn3>
@@ -125,18 +124,18 @@ public:
 		{
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
-		QICResult<TIn2> intermediateResult1 = trans1(result.GetContent1());
+		QICResult<TIn2> intermediateResult1 = trans1(result.getContent<0>());
 		if (!intermediateResult1.IsSuccess)
 		{
 			return QICResult<TResult>::CreateFailedResult(intermediateResult1);
 		}
-		QICResult<TIn3> intermediateResult2 = trans2(intermediateResult1.GetContent1());
+		QICResult<TIn3> intermediateResult2 = trans2(intermediateResult1.getContent<0>());
 		if (!intermediateResult2.IsSuccess)
 		{
 			return QICResult<TResult>::CreateFailedResult(intermediateResult2);
 		}
 
-		return trans3(intermediateResult2.GetContent1());
+		return trans3(intermediateResult2.getContent<0>());
 	}
 
 	template <typename TResult, typename TIn1, typename TIn2, typename TIn3, typename TIn4>
@@ -151,23 +150,23 @@ public:
 		{
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
-		QICResult<TIn2> intermediateResult1 = trans1(result.GetContent1());
+		QICResult<TIn2> intermediateResult1 = trans1(result.getContent<0>());
 		if (!intermediateResult1.IsSuccess)
 		{
 			return QICResult<TResult>::CreateFailedResult(intermediateResult1);
 		}
-		QICResult<TIn3> intermediateResult2 = trans2(intermediateResult1.GetContent1());
+		QICResult<TIn3> intermediateResult2 = trans2(intermediateResult1.getContent<0>());
 		if (!intermediateResult2.IsSuccess)
 		{
 			return QICResult<TResult>::CreateFailedResult(intermediateResult2);
 		}
-		QICResult<TIn4> intermediateResult3 = trans3(intermediateResult2.GetContent1());
+		QICResult<TIn4> intermediateResult3 = trans3(intermediateResult2.getContent<0>());
 		if (!intermediateResult3.IsSuccess)
 		{
 			return QICResult<TResult>::CreateFailedResult(intermediateResult3);
 		}
 
-		return trans4(intermediateResult3.GetContent1());
+		return trans4(intermediateResult3.getContent<0>());
 	}
 
 	template <typename TResult, typename TIn1, typename TIn2, typename TIn3, typename TIn4, typename TIn5>
@@ -183,28 +182,28 @@ public:
 		{
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
-		QICResult<TIn2> intermediateResult1 = trans1(result.GetContent1());
+		QICResult<TIn2> intermediateResult1 = trans1(result.getContent<0>());
 		if (!intermediateResult1.IsSuccess)
 		{
 			return QICResult<TResult>::CreateFailedResult(intermediateResult1);
 		}
-		QICResult<TIn3> intermediateResult2 = trans2(intermediateResult1.GetContent1());
+		QICResult<TIn3> intermediateResult2 = trans2(intermediateResult1.getContent<0>());
 		if (!intermediateResult2.IsSuccess)
 		{
 			return QICResult<TResult>::CreateFailedResult(intermediateResult2);
 		}
-		QICResult<TIn4> intermediateResult3 = trans3(intermediateResult2.GetContent1());
+		QICResult<TIn4> intermediateResult3 = trans3(intermediateResult2.getContent<0>());
 		if (!intermediateResult3.IsSuccess)
 		{
 			return QICResult<TResult>::CreateFailedResult(intermediateResult3);
 		}
-		QICResult<TIn5> intermediateResult4 = trans4(intermediateResult3.GetContent1());
+		QICResult<TIn5> intermediateResult4 = trans4(intermediateResult3.getContent<0>());
 		if (!intermediateResult4.IsSuccess)
 		{
 			return QICResult<TResult>::CreateFailedResult(intermediateResult4);
 		}
 
-		return trans5(intermediateResult4.GetContent1());
+		return trans5(intermediateResult4.getContent<0>());
 	}*/
 
 	template <typename TResult, typename... TArgs>
@@ -233,8 +232,6 @@ private:
 		{
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
-		return InternalGetResultFromOther(func(result.GetContent1()), others...);
+		return InternalGetResultFromOther(func(result.getContent<0>()), others...);
 	}
-#endif // 0 // 暂时未使用
-
 };
