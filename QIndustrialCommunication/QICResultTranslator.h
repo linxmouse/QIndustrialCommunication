@@ -8,7 +8,7 @@
 #include "DataFormat.h"
 #include "QICResult.h"
 
-class GetResultHelper
+class QICResultTranslator
 {
 public:
 	/**

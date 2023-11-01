@@ -4,7 +4,7 @@ KeyenceNanoSerialOverTcp::KeyenceNanoSerialOverTcp(QString ipAddress, int port, 
 	bool enableSendRecvLog, int connectTimeOut, int receiveTimeOut, QObject* parent)
 	: DeviceBase(ipAddress, port, isPersistentConn, enableSendRecvLog, connectTimeOut, receiveTimeOut, parent)
 {
-	ByteConverter = new ByteConverterBase(DataFormat::DCBA, true);
+	Converter = new ConverterBase(DataFormat::DCBA, true);
 }
 
 KeyenceNanoSerialOverTcp::~KeyenceNanoSerialOverTcp()

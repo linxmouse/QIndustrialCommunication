@@ -10,10 +10,10 @@
 #include <exception>
 #include "DataFormat.h"
 
-class ByteConverterBase
+class ConverterBase
 {
 public:
-	explicit ByteConverterBase(DataFormat dataFormat, bool isStringReverseByteWord = false)
+	explicit ConverterBase(DataFormat dataFormat, bool isStringReverseByteWord = false)
 		: dataFormat(dataFormat), isStringReverseByteWord(isStringReverseByteWord) { }
 
 public:
