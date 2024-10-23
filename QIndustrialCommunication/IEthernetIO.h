@@ -47,11 +47,11 @@ public:
 
 	virtual QICResult<QVector<short>> ReadInt16(QString address, ushort length)
 	{
-#if 0 
-		// 展开形式
-		auto result = Read(address, length * wordLenght);
+#if 1 // 不使用QICResultTranslator
+		
+		auto result = Read(address, length * WordLenght);
 		if (!result.IsSuccess) return QICResult<QVector<short>>::CreateFailedResult(result);
-		auto value = BytesOrder->ConvertToInt16(result.GetContent<0>(), 0, length);
+		auto value = BytesOrderPtr->ConvertToInt16(result.getContent<0>(), 0, length);
 		return QICResult<QVector<short>>::CreateSuccessResult(value);
 #else
 		auto result = Read(address, length * WordLenght);
@@ -64,11 +64,10 @@ public:
 	}
 	QICResult<short> ReadInt16(const QString &address)
 	{
-#if 0
-		// 展开形式
+#if 1 // 不使用QICResultTranslator
 		auto result = ReadInt16(address, 1);
 		if (!result.IsSuccess) return QICResult<short>::CreateFailedResult(result);
-		auto content = result.GetContent<0>();
+		auto content = result.getContent<0>();
 		return QICResult<short>::CreateSuccessResult(content.at(0));
 #else
 		auto result = ReadInt16(address, 1);
@@ -78,43 +77,82 @@ public:
 
 	virtual QICResult<QVector<ushort>> ReadUInt16(const QString &address, ushort length)
 	{
+#if 1 // 不使用QICResultTranslator
 		auto result = Read(address, length * WordLenght);
-		auto lambda = [=](const QByteArray &byteArray)
-		{
-			return BytesOrderPtr->ConvertToUInt16(byteArray, 0, length);
-		};
+		if (!result.IsSuccess) return QICResult<QVector<ushort>>::CreateFailedResult(result);
+		auto fmtedResult = BytesOrderPtr->ConvertToUInt16(result.getContent<0>(), 0, length);
+		return QICResult<QVector<ushort>>::CreateSuccessResult(fmtedResult);
+#else
+		auto result = Read(address, length * WordLenght);
+		auto lambda = [=](const QByteArray& byteArray)
+			{
+				return BytesOrderPtr->ConvertToUInt16(byteArray, 0, length);
+			};
 		return QICResultTranslator::GetResultFromBytes<QVector<ushort>>(result, lambda);
+#endif // 1
+
 	}
 	QICResult<ushort> ReadUInt16(const QString &address)
 	{
+#if 1 // 不使用QICResultTranslator
+		auto result = ReadUInt16(address, 1);
+		if (!result.IsSuccess) return QICResult<ushort>::CreateFailedResult(result);
+		auto content = result.getContent<0>();
+		return QICResult<ushort>::CreateSuccessResult(content.at(0));
+#else
 		auto result = ReadUInt16(address, 1);
 		return QICResultTranslator::GetResultFromArray(result);
+#endif // 1
+
 	}
 
 	virtual QICResult<QVector<int>> ReadInt32(const QString &address, ushort length)
 	{
+#if 1 // 不使用QICResultTranslator
 		auto result = Read(address, length * WordLenght * 2);
-		auto lambda = [=](const QByteArray &byteArray)
-		{
-			return BytesOrderPtr->ConvertToInt32(byteArray, 0, length);
-		};
+		if (!result.IsSuccess) return QICResult<QVector<int>>::CreateFailedResult(result);
+		auto fmtedResult = BytesOrderPtr->ConvertToInt32(result.getContent<0>(), 0, length);
+		return QICResult<QVector<int>>::CreateSuccessResult(fmtedResult);
+#else
+		auto result = Read(address, length * WordLenght * 2);
+		auto lambda = [=](const QByteArray& byteArray)
+			{
+				return BytesOrderPtr->ConvertToInt32(byteArray, 0, length);
+			};
 		return QICResultTranslator::GetResultFromBytes<QVector<int>>(result, lambda);
+#endif // 1
+
 	}
 	QICResult<int> ReadInt32(const QString &address)
 	{
+#if 1 // 不使用QICResultTranslator
+		auto result = ReadInt32(address, 1);
+		if (!result.IsSuccess) return QICResult<int>::CreateFailedResult(result);
+		auto content = result.getContent<0>();
+		return QICResult<int>::CreateSuccessResult(content.at(0));
+#else
 		auto result = ReadInt32(address, 1);
 		if (!result.IsSuccess) return QICResult<int>::CreateFailedResult(result);
 		return QICResult<int>::CreateSuccessResult(result.getContent<0>().at(0));
+#endif // 1
+
 	}
 
 	virtual QICResult<QVector<uint>> ReadUInt32(const QString &address, ushort length)
 	{
+#if 1 // 不使用QICResultTranslator
 		auto result = Read(address, length * WordLenght * 2);
-		auto lambda = [=](const QByteArray &byteArray)
-		{
-			return BytesOrderPtr->ConvertToUInt32(byteArray, 0, length);
-		};
+		if (!result.IsSuccess) return QICResult<QVector<uint>>::CreateFailedResult(result);
+		auto fmtedResult = BytesOrderPtr->ConvertToUInt32(result.getContent<0>(), 0, length);
+#else
+		auto result = Read(address, length * WordLenght * 2);
+		auto lambda = [=](const QByteArray& byteArray)
+			{
+				return BytesOrderPtr->ConvertToUInt32(byteArray, 0, length);
+			};
 		return QICResultTranslator::GetResultFromBytes<QVector<uint>>(result, lambda);
+#endif // 1
+
 	}
 	QICResult<uint> ReadUInt32(const QString &address)
 	{

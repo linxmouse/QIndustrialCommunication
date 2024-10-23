@@ -50,8 +50,7 @@ public:
 	template <typename TResult>
 	static QICResult<TResult> GetResultFromArray(const QICResult<QVector<TResult>> &result)
 	{
-		auto lambda = [](const QVector<TResult> &m) -> TResult
-		{ return m.at(0); };
+		std::function<TResult(const QVector<TResult>&)> lambda = [](const QVector<TResult>& m) -> TResult { return m.at(0); };
 		return GetSuccessResultFromOther<TResult, QVector<TResult>>(result, lambda);
 	}
 
@@ -85,127 +84,6 @@ public:
 		}
 		return func(result.getContent<0>());
 	}
-
-	/*template <typename TResult, typename TIn>
-	static QICResult<TResult> GetResultFromOther(const QICResult<TIn>& result, std::function<QICResult<TResult>(TIn)> func)
-	{
-		if (!result.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(result);
-		}
-		return func(result.getContent<0>());
-	}
-
-	template <typename TResult, typename TIn1, typename TIn2>
-	static QICResult<TResult> GetResultFromOther(const QICResult<TIn1>& result,
-		std::function<QICResult<TIn2>(TIn1)> trans1,
-		std::function<QICResult<TResult>(TIn2)> trans2)
-	{
-		if (!result.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(result);
-		}
-		QICResult<TIn2> intermediateResult = trans1(result.getContent<0>());
-		if (!intermediateResult.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(intermediateResult);
-		}
-
-		return trans2(intermediateResult.getContent<0>());
-	}
-
-	template <typename TResult, typename TIn1, typename TIn2, typename TIn3>
-	static QICResult<TResult> GetResultFromOther(
-		const QICResult<TIn1>& result,
-		std::function<QICResult<TIn2>(TIn1)> trans1,
-		std::function<QICResult<TIn3>(TIn2)> trans2,
-		std::function<QICResult<TResult>(TIn3)> trans3)
-	{
-		if (!result.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(result);
-		}
-		QICResult<TIn2> intermediateResult1 = trans1(result.getContent<0>());
-		if (!intermediateResult1.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(intermediateResult1);
-		}
-		QICResult<TIn3> intermediateResult2 = trans2(intermediateResult1.getContent<0>());
-		if (!intermediateResult2.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(intermediateResult2);
-		}
-
-		return trans3(intermediateResult2.getContent<0>());
-	}
-
-	template <typename TResult, typename TIn1, typename TIn2, typename TIn3, typename TIn4>
-	static QICResult<TResult> GetResultFromOther(
-		const QICResult<TIn1>& result,
-		std::function<QICResult<TIn2>(TIn1)> trans1,
-		std::function<QICResult<TIn3>(TIn2)> trans2,
-		std::function<QICResult<TIn4>(TIn3)> trans3,
-		std::function<QICResult<TResult>(TIn4)> trans4)
-	{
-		if (!result.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(result);
-		}
-		QICResult<TIn2> intermediateResult1 = trans1(result.getContent<0>());
-		if (!intermediateResult1.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(intermediateResult1);
-		}
-		QICResult<TIn3> intermediateResult2 = trans2(intermediateResult1.getContent<0>());
-		if (!intermediateResult2.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(intermediateResult2);
-		}
-		QICResult<TIn4> intermediateResult3 = trans3(intermediateResult2.getContent<0>());
-		if (!intermediateResult3.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(intermediateResult3);
-		}
-
-		return trans4(intermediateResult3.getContent<0>());
-	}
-
-	template <typename TResult, typename TIn1, typename TIn2, typename TIn3, typename TIn4, typename TIn5>
-	QICResult<TResult> GetResultFromOther(
-		const QICResult<TIn1>& result,
-		std::function<QICResult<TIn2>(TIn1)> trans1,
-		std::function<QICResult<TIn3>(TIn2)> trans2,
-		std::function<QICResult<TIn4>(TIn3)> trans3,
-		std::function<QICResult<TIn5>(TIn4)> trans4,
-		std::function<QICResult<TResult>(TIn5)> trans5)
-	{
-		if (!result.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(result);
-		}
-		QICResult<TIn2> intermediateResult1 = trans1(result.getContent<0>());
-		if (!intermediateResult1.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(intermediateResult1);
-		}
-		QICResult<TIn3> intermediateResult2 = trans2(intermediateResult1.getContent<0>());
-		if (!intermediateResult2.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(intermediateResult2);
-		}
-		QICResult<TIn4> intermediateResult3 = trans3(intermediateResult2.getContent<0>());
-		if (!intermediateResult3.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(intermediateResult3);
-		}
-		QICResult<TIn5> intermediateResult4 = trans4(intermediateResult3.getContent<0>());
-		if (!intermediateResult4.IsSuccess)
-		{
-			return QICResult<TResult>::CreateFailedResult(intermediateResult4);
-		}
-
-		return trans5(intermediateResult4.getContent<0>());
-	}*/
 
 	template <typename TResult, typename... TArgs>
 	static QICResult<TResult> GetResultFromOther(

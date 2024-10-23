@@ -9,8 +9,10 @@ int main(int argc, char* argv[])
 	// User Code
 	QICResult<int, QString> result = QICResult<int, QString>::CreateSuccessResult(42, "Hello");
 	qDebug() << result.ToMessageShowString();
-	qDebug() << "Content1: " << result.getContent<0>(); // 输出 42
-	qDebug() << "Content2: " << result.getContent<1>(); // 输出 "Hello"
+	//qDebug() << "Content0: " << result.getContent<0>(); // 输出 42
+	//qDebug() << "Content1: " << result.getContent<1>(); // 输出 "Hello"
+	qDebug() << "Content0: " << result.getContent0(); // 输出 42
+	qDebug() << "Content1: " << result.getContent1(); // 输出 "Hello"
 
 #if 0 // 基恩士测试
 	KeyenceNanoSerialOverTcp overTcp{ "192.168.0.78", 8501, true, false };
@@ -76,6 +78,7 @@ int main(int argc, char* argv[])
 	s7Net.DisableSendRecvLog();
 	QICResult<int> rInt = s7Net.ReadInt32("DB3400.0");
 	qDebug() << "Readed Int32's value: " << rInt.getContent<0>();
+	qDebug() << "Readed Int32's value: " << rInt.getContent0();
 
 	QICResult<QVector<int>> rInts = s7Net.ReadInt32("DB3400.0", 2);
 	int index = 0;
