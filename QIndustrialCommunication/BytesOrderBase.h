@@ -10,13 +10,32 @@
 #include <exception>
 #include "DataFormat.h"
 
-class ConverterBase
+/**
+ * @brief Base class for handling byte order conversions
+ * @details This class provides functionality for converting between different byte orders
+ *          and data formats, supporting various data types including numeric types and strings.
+ *          基类用于处理字节序转换，提供不同字节序和数据格式之间的转换功能，
+ *          支持包括数值类型和字符串在内的各种数据类型。
+ */
+class BytesOrderBase
 {
 public:
-	explicit ConverterBase(DataFormat dataFormat, bool isStringReverseByteWord = false)
+	/**
+	 * @brief Constructor for BytesOrderBase
+	 * @param dataFormat The data format to be used for conversions (数据格式，用于转换)
+	 * @param isStringReverseByteWord Whether to reverse byte order for strings (是否对字符串进行字节序反转)
+	 */
+	explicit BytesOrderBase(DataFormat dataFormat, bool isStringReverseByteWord = false)
 		: dataFormat(dataFormat), isStringReverseByteWord(isStringReverseByteWord) { }
 
 public:
+	/**
+	 * @brief Convert byte to boolean value
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index in buffer (缓冲区起始索引)
+	 * @return Converted boolean value (转换后的布尔值)
+	 * @throws std::out_of_range if index is invalid (如果索引无效则抛出异常)
+	 */
 	virtual bool ConvertToBool(const QByteArray& buffer, int index)
 	{
 		if (index < 0 || index >= buffer.size()) throw std::out_of_range("index is out of range or less than 0");
@@ -45,10 +64,17 @@ public:
 		return result;
 	}
 
+	/**
+	 * @brief Convert bytes to 16-bit signed integer
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index in buffer (缓冲区起始索引)
+	 * @return Converted 16-bit signed integer (转换后的16位有符号整数)
+	 */
 	virtual short ConvertToInt16(const QByteArray& buffer, int index)
 	{
-		qint16 value;
-		std::memcpy(&value, buffer.constData() + index, sizeof(qint16));
+		QByteArray fmtBuffer = ByteTransDataFormat2(buffer, index);
+		qint16 value = 0;
+		std::memcpy(&value, fmtBuffer.constData() + index, sizeof(value));
 		return value;
 	}
 	virtual QVector<qint16> ConvertToInt16(const QByteArray& buffer, int index, int length)
@@ -62,10 +88,17 @@ public:
 		return array;
 	}
 
+	/**
+	 * @brief Convert bytes to 16-bit unsigned integer
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index in buffer (缓冲区起始索引)
+	 * @return Converted 16-bit unsigned integer (转换后的16位无符号整数)
+	 */
 	virtual ushort ConvertToUInt16(const QByteArray& buffer, int index)
 	{
-		ushort value;
-		std::memcpy(&value, buffer.constData() + index, sizeof(ushort));
+		QByteArray fmtBuffer = ByteTransDataFormat2(buffer, index);
+		ushort value = 0;
+		std::memcpy(&value, fmtBuffer.constData() + index, sizeof(value));
 		return value;
 	}
 	virtual QVector<ushort> ConvertToUInt16(const QByteArray& buffer, int index, int lenght)
@@ -79,6 +112,12 @@ public:
 		return array;
 	}
 
+	/**
+	 * @brief Convert bytes to 32-bit signed integer
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index in buffer (缓冲区起始索引)
+	 * @return Converted 32-bit signed integer (转换后的32位有符号整数)
+	 */
 	virtual int ConvertToInt32(const QByteArray& buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat4(buffer, index);
@@ -96,6 +135,12 @@ public:
 		return array;
 	}
 
+	/**
+	 * @brief Convert bytes to 32-bit unsigned integer
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index in buffer (缓冲区起始索引)
+	 * @return Converted 32-bit unsigned integer (转换后的32位无符号整数)
+	 */
 	virtual uint ConvertToUInt32(const QByteArray& buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat4(buffer, index);
@@ -113,6 +158,12 @@ public:
 		return array;
 	}
 
+	/**
+	 * @brief Convert bytes to 64-bit signed integer
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index in buffer (缓冲区起始索引)
+	 * @return Converted 64-bit signed integer (转换后的64位有符号整数)
+	 */
 	virtual qint64 ConvertToInt64(const QByteArray& buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat8(buffer, index);
@@ -130,6 +181,12 @@ public:
 		return array;
 	}
 
+	/**
+	 * @brief Convert bytes to 64-bit unsigned integer
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index in buffer (缓冲区起始索引)
+	 * @return Converted 64-bit unsigned integer (转换后的64位无符号整数)
+	 */
 	virtual quint64 ConvertToUInt64(const QByteArray& buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat8(buffer, index);
@@ -147,6 +204,12 @@ public:
 		return array;
 	}
 
+	/**
+	 * @brief Convert bytes to single-precision floating point
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index in buffer (缓冲区起始索引)
+	 * @return Converted float value (转换后的单精度浮点数)
+	 */
 	virtual float ConvertToFloat(const QByteArray& buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat4(buffer, index);
@@ -164,6 +227,12 @@ public:
 		return array;
 	}
 
+	/**
+	 * @brief Convert bytes to double-precision floating point
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index in buffer (缓冲区起始索引)
+	 * @return Converted double value (转换后的双精度浮点数)
+	 */
 	virtual double ConvertToDouble(const QByteArray& buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat8(buffer, index);
@@ -181,6 +250,15 @@ public:
 		return array;
 	}
 
+	/**
+	 * @brief Convert bytes to string using specified text codec
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index in buffer (缓冲区起始索引)
+	 * @param length Number of bytes to convert (要转换的字节数)
+	 * @param codec Text codec to use for conversion (用于转换的文本编码器)
+	 * @return Converted string (转换后的字符串)
+	 * @throws std::out_of_range if index is invalid (如果索引无效则抛出异常)
+	 */
 	virtual QString ConvertToString(const QByteArray& buffer, int index, int length, QTextCodec* codec)
 	{
 		if (index < 0 || index >= buffer.size()) throw std::out_of_range("index is out of range or less than 0");
@@ -191,22 +269,48 @@ public:
 		}
 		return codec->toUnicode(subArray);
 	}
+	/**
+	 * @brief Convert entire byte array to string using specified text codec
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param codec Text codec to use for conversion (用于转换的文本编码器)
+	 * @return Converted string (转换后的字符串)
+	 */
 	virtual QString ConvertToString(const QByteArray& buffer, QTextCodec* codec)
 	{
 		return codec->toUnicode(buffer);
 	}
 
+	/**
+	 * @brief Extract single byte from byte array
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Index of byte to extract (要提取的字节索引)
+	 * @return Extracted byte value (提取的字节值)
+	 * @throws std::out_of_range if index is invalid (如果索引无效则抛出异常)
+	 */
 	virtual quint8 PackByteArray(const QByteArray& buffer, int index)
 	{
 		if (index < 0 || index >= buffer.size()) throw std::out_of_range("index is out of range or less than 0");
 		return static_cast<quint8>(buffer.at(index));
 	}
+	/**
+	 * @brief Extract multiple bytes from byte array
+	 * @param buffer Input byte array (输入字节数组)
+	 * @param index Starting index (起始索引)
+	 * @param length Number of bytes to extract (要提取的字节数)
+	 * @return Extracted bytes (提取的字节数组)
+	 * @throws std::out_of_range if index is invalid (如果索引无效则抛出异常)
+	 */
 	virtual QByteArray PackByteArray(const QByteArray& buffer, int index, int length)
 	{
 		if (index < 0 || index >= buffer.size()) throw std::out_of_range("index is out of range or less than 0");
 		return buffer.mid(index, length);
 	}
 
+	/**
+	 * @brief Pack boolean values into byte array
+	 * @param values Vector of boolean values to pack (要打包的布尔值数组)
+	 * @return Packed byte array (打包后的字节数组)
+	 */
 	virtual QByteArray PackByteArray(const QVector<bool>& values)
 	{
 		int bitCount = values.size();
@@ -229,6 +333,11 @@ public:
 		}
 		return bytes;
 	}
+	/**
+	 * @brief Pack single boolean value into byte array
+	 * @param value Boolean value to pack (要打包的布尔值)
+	 * @return Packed byte array (打包后的字节数组)
+	 */
 	virtual QByteArray PackByteArray(bool value) { return PackByteArray(QVector<bool>{value}); }
 
 	virtual QByteArray PackByteArray(const QVector<short>& values)
@@ -237,7 +346,8 @@ public:
 		QByteArray array;
 		for (const short& value : values)
 		{
-			array.append(reinterpret_cast<const char*>(&value), sizeof(short));
+			QByteArray temp = ByteTransDataFormat2(QByteArray::fromRawData(reinterpret_cast<const char*>(&value), sizeof(short)));
+			array.append(temp);
 		}
 		return array;
 	}
@@ -249,7 +359,8 @@ public:
 		QByteArray array;
 		for (const ushort& value : values)
 		{
-			array.append(reinterpret_cast<const char*>(&value), sizeof(ushort));
+			QByteArray temp = ByteTransDataFormat2(QByteArray::fromRawData(reinterpret_cast<const char*>(&value), sizeof(ushort)));
+			array.append(temp);
 		}
 		return array;
 	}
@@ -349,6 +460,46 @@ public:
 	}
 
 protected:
+	/**
+	 * @brief Convert 2-byte data according to specified format
+	 * @details Handles endianness conversion for 16-bit values based on dataFormat
+	 *          根据dataFormat处理16位值的字节序转换
+	 * @param value Input byte array (输入字节数组)
+	 * @param index Starting index (起始索引)
+	 * @return Formatted byte array (格式化后的字节数组)
+	 */
+	QByteArray ByteTransDataFormat2(const QByteArray& value, int index = 0)
+	{
+		QByteArray array(2, 0);
+		switch (dataFormat)
+		{
+		case DataFormat::ABCD:
+			array[0] = value[index + 1];
+			array[1] = value[index];
+			break;
+		case DataFormat::BADC:
+			array[0] = value[index];
+			array[1] = value[index + 1];
+			break;
+		case DataFormat::CDAB:
+			array[0] = value[index + 1];
+			array[1] = value[index];
+			break;
+		case DataFormat::DCBA:
+			array[0] = value[index];
+			array[1] = value[index + 1];
+			break;
+		}
+		return array;
+	}
+	/**
+	 * @brief Convert 4-byte data according to specified format
+	 * @details Handles endianness conversion for 32-bit values based on dataFormat
+	 *          根据dataFormat处理32位值的字节序转换
+	 * @param value Input byte array (输入字节数组)
+	 * @param index Starting index (起始索引)
+	 * @return Formatted byte array (格式化后的字节数组)
+	 */
 	QByteArray ByteTransDataFormat4(const QByteArray& value, int index = 0)
 	{
 		QByteArray array(4, 0);
@@ -381,7 +532,14 @@ protected:
 		}
 		return array;
 	}
-
+	/**
+	 * @brief Convert 8-byte data according to specified format
+	 * @details Handles endianness conversion for 64-bit values based on dataFormat
+	 *          根据dataFormat处理64位值的字节序转换
+	 * @param value Input byte array (输入字节数组)
+	 * @param index Starting index (起始索引)
+	 * @return Formatted byte array (格式化后的字节数组)
+	 */
 	QByteArray ByteTransDataFormat8(const QByteArray& value, int index = 0)
 	{
 		QByteArray array(8, 0);
@@ -432,6 +590,20 @@ protected:
 	}
 
 private:
+	/**
+	 * @brief Reverses the byte order of the input QByteArray in pairs (i.e., by word).
+	 *
+	 * This function swaps the order of each consecutive pair of bytes in the input array.
+	 * If the length of the array is odd, a null byte ('\0') will be appended to make the
+	 * array length even before performing the swap. If the input QByteArray is empty,
+	 * the function returns an empty QByteArray.
+	 *
+	 * Example:
+	 * Input: [0x12, 0x34, 0x56]  -> Output: [0x34, 0x12, 0x00, 0x56]
+	 *
+	 * @param value The input QByteArray to be processed.
+	 * @return QByteArray The resulting QByteArray after swapping byte pairs.
+	 */
 	QByteArray bytesReverseByWord(const QByteArray& value)
 	{
 		if (value.isEmpty()) return QByteArray();
@@ -440,6 +612,7 @@ private:
 		if (array.size() % 2 != 0) array.append('\0');
 		for (int i = 0; i < array.size() / 2; ++i)
 		{
+			// 将当前字节与下一个字节交换
 			char temp = array[i * 2];
 			array[i * 2] = array[i * 2 + 1];
 			array[i * 2 + 1] = temp;

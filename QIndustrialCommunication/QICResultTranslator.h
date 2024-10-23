@@ -21,7 +21,7 @@ public:
 	 * @throw QException If the conversion function throws an exception.
 	 */
 	template <typename TResult>
-	static QICResult<TResult> GetResultFromBytes(const QICResult<QByteArray>& result, std::function<TResult(const QByteArray&)> func)
+	static QICResult<TResult> GetResultFromBytes(const QICResult<QByteArray> &result, std::function<TResult(const QByteArray &)> func)
 	{
 		try
 		{
@@ -31,11 +31,11 @@ public:
 			}
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
-		catch (const QException& ex)
+		catch (const QException &ex)
 		{
 			QString errorMessage = QString("Data transform error: Length(%1) %2")
-				.arg(result.getContent<0>().size())
-				.arg(ex.what());
+									   .arg(result.getContent<0>().size())
+									   .arg(ex.what());
 			return QICResult<TResult>::CreateFailedResult(errorMessage);
 		}
 	}
@@ -48,9 +48,10 @@ public:
 	 * @return A QICResult object containing the first element of type TResult.
 	 */
 	template <typename TResult>
-	static QICResult<TResult> GetResultFromArray(const QICResult<QVector<TResult>>& result)
+	static QICResult<TResult> GetResultFromArray(const QICResult<QVector<TResult>> &result)
 	{
-		auto lambda = [](const QVector<TResult>& m) -> TResult { return m.at(0); };
+		auto lambda = [](const QVector<TResult> &m) -> TResult
+		{ return m.at(0); };
 		return GetSuccessResultFromOther<TResult, QVector<TResult>>(result, lambda);
 	}
 
@@ -66,7 +67,7 @@ public:
 	 * @return A QICResult object containing TResult.
 	 */
 	template <typename TResult, typename TIn>
-	static QICResult<TResult> GetSuccessResultFromOther(const QICResult<TIn>& result, std::function<TResult(TIn)> func)
+	static QICResult<TResult> GetSuccessResultFromOther(const QICResult<TIn> &result, std::function<TResult(TIn)> func)
 	{
 		if (!result.IsSuccess)
 		{
@@ -76,7 +77,7 @@ public:
 	}
 
 	template <typename TIn>
-	static QICResult<> GetResultFromOther(const QICResult<TIn>& result, std::function<QICResult<>(TIn)> func)
+	static QICResult<> GetResultFromOther(const QICResult<TIn> &result, std::function<QICResult<>(TIn)> func)
 	{
 		if (!result.IsSuccess)
 		{
@@ -208,7 +209,7 @@ public:
 
 	template <typename TResult, typename... TArgs>
 	static QICResult<TResult> GetResultFromOther(
-		const QICResult<TResult>& result,
+		const QICResult<TResult> &result,
 		std::function<TArgs>... func)
 	{
 		return InternalGetResultFromOther(result, func...);
@@ -217,14 +218,14 @@ public:
 private:
 	template <typename TResult>
 	static QICResult<TResult> InternalGetResultFromOther(
-		const QICResult<TResult>& result)
+		const QICResult<TResult> &result)
 	{
 		return result;
 	}
 
 	template <typename TResult, typename TIn, typename... TArgs>
 	static QICResult<TResult> InternalGetResultFromOther(
-		const QICResult<TIn>& result,
+		const QICResult<TIn> &result,
 		std::function<QICResult<TResult>(TIn)> func,
 		std::function<TArgs>... others)
 	{

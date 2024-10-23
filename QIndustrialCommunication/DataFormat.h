@@ -1,6 +1,6 @@
 #pragma once
 
-enum DataFormat
+enum class DataFormat
 {
 	ABCD,
 	BADC,
