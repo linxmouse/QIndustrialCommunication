@@ -19,11 +19,11 @@ QICResult<QByteArray> KeyenceNanoSerialOverTcp::Read(const QString &address, ush
 	if (!buildResult.IsSuccess)
 		return QICResult<QByteArray>::CreateFailedResult(buildResult);
 	// 从核心服务器读取
-	QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.getContent<0>());
+	QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.getContent0());
 	if (!readResult.IsSuccess)
 		return QICResult<QByteArray>::CreateFailedResult(readResult);
 	// 检查PLC写入响应协议格式
-	QICResult checkResult = CheckPlcReadResponse(readResult.getContent<0>());
+	QICResult<> checkResult = CheckPlcReadResponse(readResult.getContent0());
 	if (!checkResult.IsSuccess)
 		return QICResult<QByteArray>::CreateFailedResult(checkResult);
 	// 分析地址
@@ -31,7 +31,7 @@ QICResult<QByteArray> KeyenceNanoSerialOverTcp::Read(const QString &address, ush
 	if (!analysisResult.IsSuccess)
 		return QICResult<QByteArray>::CreateFailedResult(analysisResult);
 	// 解析数据
-	return ParsedData(analysisResult.getContent<0>(), readResult.getContent<0>());
+	return ParsedData(analysisResult.getContent0(), readResult.getContent0());
 }
 
 QICResult<QVector<bool>> KeyenceNanoSerialOverTcp::ReadBool(const QString &address, ushort length)
@@ -41,11 +41,11 @@ QICResult<QVector<bool>> KeyenceNanoSerialOverTcp::ReadBool(const QString &addre
 	if (!buildResult.IsSuccess)
 		return QICResult<QVector<bool>>::CreateFailedResult(buildResult);
 	// 从核心服务器读取
-	auto readResult = ReadFromCoreServer(buildResult.getContent<0>());
+	auto readResult = ReadFromCoreServer(buildResult.getContent0());
 	if (!readResult.IsSuccess)
 		return QICResult<QVector<bool>>::CreateFailedResult(readResult);
 	// 检查PLC写入响应协议格式
-	auto checkResult = CheckPlcReadResponse(readResult.getContent<0>());
+	auto checkResult = CheckPlcReadResponse(readResult.getContent0());
 	if (!checkResult.IsSuccess)
 		return QICResult<QVector<bool>>::CreateFailedResult(checkResult);
 	// 地址分析
@@ -53,7 +53,7 @@ QICResult<QVector<bool>> KeyenceNanoSerialOverTcp::ReadBool(const QString &addre
 	if (!addressResult.IsSuccess)
 		return QICResult<QVector<bool>>::CreateFailedResult(addressResult);
 	// 解析数据
-	return ParsedBoolData(addressResult.getContent<0>(), readResult.getContent<0>());
+	return ParsedBoolData(addressResult.getContent0(), readResult.getContent0());
 }
 
 QICResult<> KeyenceNanoSerialOverTcp::Write(const QString &address, const QByteArray &value)
@@ -63,11 +63,11 @@ QICResult<> KeyenceNanoSerialOverTcp::Write(const QString &address, const QByteA
 	if (!buildResult.IsSuccess)
 		return QICResult<>::CreateFailedResult(buildResult);
 	// 从核心服务器读取响应
-	QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.getContent<0>());
+	QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.getContent0());
 	if (!readResult.IsSuccess)
 		return QICResult<>::CreateFailedResult(readResult);
 	// 检查PLC写入响应协议格式
-	QICResult<> checkResult = CheckPlcWriteResponse(readResult.getContent<0>());
+	QICResult<> checkResult = CheckPlcWriteResponse(readResult.getContent0());
 	return checkResult;
 }
 
@@ -78,11 +78,11 @@ QICResult<> KeyenceNanoSerialOverTcp::Write(const QString &address, bool value)
 	if (!buildResult.IsSuccess)
 		return QICResult<>::CreateFailedResult(buildResult);
 	// 从核心服务器读取响应
-	QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.getContent<0>());
+	QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.getContent0());
 	if (!readResult.IsSuccess)
 		return QICResult<>::CreateFailedResult(readResult);
 	// 检查PLC写入响应协议格式
-	QICResult<> checkResult = CheckPlcWriteResponse(readResult.getContent<0>());
+	QICResult<> checkResult = CheckPlcWriteResponse(readResult.getContent0());
 	return checkResult;
 }
 
@@ -93,10 +93,10 @@ QICResult<> KeyenceNanoSerialOverTcp::Write(const QString &address, QVector<bool
 	if (!buildResult.IsSuccess)
 		return QICResult<>::CreateFailedResult(buildResult);
 	// 从核心服务器读取响应
-	QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.getContent<0>());
+	QICResult<QByteArray> readResult = ReadFromCoreServer(buildResult.getContent0());
 	if (!readResult.IsSuccess)
 		return QICResult<>::CreateFailedResult(readResult);
 	// 检查PLC写入响应协议格式
-	QICResult<> checkResult = CheckPlcWriteResponse(readResult.getContent<0>());
+	QICResult<> checkResult = CheckPlcWriteResponse(readResult.getContent0());
 	return checkResult;
 }

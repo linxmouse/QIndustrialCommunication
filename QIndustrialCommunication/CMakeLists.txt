@@ -30,7 +30,7 @@ set(CMAKE_AUTOMOC ON)
 # 将源代码添加到此项目的可执行文件。
 add_library(QIC ${SRCS} ${HEADERS})
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET QIC PROPERTY CXX_STANDARD 17)
+  set_property(TARGET QIC PROPERTY CXX_STANDARD 11)
 endif()
 
 # target_link_libraries()链接QIC库时，指定的目录会自动被添加到编译器的包含路径中

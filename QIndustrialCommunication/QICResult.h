@@ -38,6 +38,35 @@ private:
 	{
 	}
 
+	/// @brief 通过索引获取Content中的元素
+	/// @tparam U Content的元组索引值,从0开始
+	/// @return
+	template <std::size_t Index>
+	auto getContent() const
+	{
+		static_assert(Index < std::tuple_size_v<decltype(Content)>, "Index out of bounds");
+		return std::get<Index>(Content);
+	}
+
+	/// @brief
+	/// 对Content指定的索引设置值，检查类型
+	/// std::is_same_v 用于比较 std::tuple_element_t<Index, std::tuple<T...>>（元组在指定索引位置的类型）与
+	/// std::decay_t<U>（传入值的类型，去掉顶层的引用和cv限定符）是否相同,如果它们不相同，static_assert 会失败，产生一个编译错误
+	/// std::decay_t 是用来移除传递过来的类型的顶层 const、volatile 和引用修饰符
+	/// 这通常是当你想比较两个可能是不完全相同但基础类型相同的类型时有用的。如果你想保持这些修饰符，那么你可以不使用 std::decay_t
+	/// @tparam U 对应索引类型U的对象
+	/// @tparam Index 索引
+	/// @param value 类型为U的对象值
+	template <std::size_t Index, typename U>
+	void setContent(U&& value)
+	{
+		static_assert(Index < std::tuple_size_v<decltype(Content)>, "Index out of bounds");
+		// 编译时检查类型匹配
+		static_assert(std::is_same_v<std::tuple_element_t<Index, std::tuple<T...>>, std::decay_t<U>>,
+			"Type mismatch: The provided type does not match the tuple element type at the specified index.");
+		std::get<Index>(Content) = std::forward<U>(value);
+	}
+
 public:
 	QString ToMessageShowString() const
 	{
@@ -78,35 +107,6 @@ public:
 	{
 		auto result = QICResult(other.Message, other.ErrorCode);
 		return result;
-	}
-
-	/// @brief 通过索引获取Content中的元素
-	/// @tparam U Content的元组索引值,从0开始
-	/// @return
-	template <std::size_t Index>
-	auto getContent() const
-	{
-		static_assert(Index < std::tuple_size_v<decltype(Content)>, "Index out of bounds");
-		return std::get<Index>(Content);
-	}
-
-	/// @brief
-	/// 对Content指定的索引设置值，检查类型
-	/// std::is_same_v 用于比较 std::tuple_element_t<Index, std::tuple<T...>>（元组在指定索引位置的类型）与
-	/// std::decay_t<U>（传入值的类型，去掉顶层的引用和cv限定符）是否相同,如果它们不相同，static_assert 会失败，产生一个编译错误
-	/// std::decay_t 是用来移除传递过来的类型的顶层 const、volatile 和引用修饰符
-	/// 这通常是当你想比较两个可能是不完全相同但基础类型相同的类型时有用的。如果你想保持这些修饰符，那么你可以不使用 std::decay_t
-	/// @tparam U 对应索引类型U的对象
-	/// @tparam Index 索引
-	/// @param value 类型为U的对象值
-	template <std::size_t Index, typename U>
-	void setContent(U&& value)
-	{
-		static_assert(Index < std::tuple_size_v<decltype(Content)>, "Index out of bounds");
-		// 编译时检查类型匹配
-		static_assert(std::is_same_v<std::tuple_element_t<Index, std::tuple<T...>>, std::decay_t<U>>,
-			"Type mismatch: The provided type does not match the tuple element type at the specified index.");
-		std::get<Index>(Content) = std::forward<U>(value);
 	}
 
 #pragma region Generate getContent setContent convenient method
@@ -156,10 +156,12 @@ public:
 	void setContent5(U&& value) { setContentN<5>(std::forward<U>(value)); }
 #pragma endregion
 
+private:
+	std::tuple<T...> Content;
 
 public:
 	bool IsSuccess;
 	QString Message;
 	int ErrorCode;
-	std::tuple<T...> Content;
 };
+

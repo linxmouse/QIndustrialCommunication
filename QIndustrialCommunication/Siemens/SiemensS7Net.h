@@ -46,10 +46,10 @@ private:
 	QICResult<> checkStopResult(QByteArray content);
 
 public:
-	QICResult<QString> readOrderNumber();
-	QICResult<> hotStart();
-	QICResult<> coldStart();
-	QICResult<> stop();
+	QICResult<QString> ReadOrderNumber();
+	QICResult<> HotStart();
+	QICResult<> ColdStart();
+	QICResult<> Stop();
 
 	QICResult<QByteArray> Read(const QString& address, ushort length) override;
 	QICResult<QByteArray> Read(const QStringList& addresses, const QVector<quint16>& length);

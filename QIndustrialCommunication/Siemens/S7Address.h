@@ -32,10 +32,10 @@ public:
         QICResult<S7Address> result = ParseFrom(address, length);
         if (result.IsSuccess)
         {
-            this->addressStart = result.getContent<0>().addressStart;
-            this->length = result.getContent<0>().length;
-            this->dataCode = result.getContent<0>().dataCode;
-            this->dbBlock = result.getContent<0>().dbBlock;
+            this->addressStart = result.getContent0().addressStart;
+            this->length = result.getContent0().length;
+            this->dataCode = result.getContent0().dataCode;
+            this->dbBlock = result.getContent0().dbBlock;
         }
     }
 

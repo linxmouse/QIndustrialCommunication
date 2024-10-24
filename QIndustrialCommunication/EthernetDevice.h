@@ -55,7 +55,7 @@ protected:
 				qDebug() << QString("NetEngine Start Faild: %1").arg(result.Message);
 			return QICResult<>::CreateFailedResult(result);
 		}
-		CoreSocket = result.getContent<0>();
+		CoreSocket = result.getContent0();
 		if (enableSendRecvLog)
 			qDebug() << "NetEngine Started";
 		return QICResult<>::CreateSuccessResult();
@@ -88,10 +88,10 @@ protected:
 		QICResult<QTcpSocket *> createResult = CreateSocketAndConnect(QHostAddress(ipAddr), port, connectTimeOut);
 		if (createResult.IsSuccess)
 		{
-			QICResult initResult = InitializationOnConnect(createResult.getContent<0>());
+			QICResult<> initResult = InitializationOnConnect(createResult.getContent0());
 			if (!initResult.IsSuccess)
 			{
-				createResult.getContent<0>()->close();
+				createResult.getContent0()->close();
 				createResult.IsSuccess = initResult.IsSuccess;
 				createResult.CopyErrorFromOther(initResult);
 			}
@@ -105,7 +105,7 @@ protected:
 		{
 			if (IsSocketError || CoreSocket == nullptr)
 			{
-				QICResult result = ConnectServer();
+				QICResult<> result = ConnectServer();
 				if (!result.IsSuccess)
 				{
 					IsSocketError = true;
@@ -173,13 +173,13 @@ protected:
 			result.CopyErrorFromOther(availableSocket);
 			return result;
 		}
-		QICResult<QByteArray> coreServerResult = ReadFromCoreServer(availableSocket.getContent<0>(), send);
+		QICResult<QByteArray> coreServerResult = ReadFromCoreServer(availableSocket.getContent0(), send);
 		QICResult<QByteArray> finalResult;
 		if (coreServerResult.IsSuccess)
 		{
 			IsSocketError = false;
 			finalResult.IsSuccess = true;
-			finalResult.setContent<0>(coreServerResult.getContent<0>());
+			finalResult.setContent0(coreServerResult.getContent0());
 			finalResult.Message = "Success";
 		}
 		else
@@ -188,9 +188,9 @@ protected:
 			finalResult.CopyErrorFromOther(coreServerResult);
 		}
 		InteractiveMutex.unlock();
-		if (!isPersistentConn && availableSocket.getContent<0>())
+		if (!isPersistentConn && availableSocket.getContent0())
 		{
-			availableSocket.getContent<0>()->close();
+			availableSocket.getContent0()->close();
 		}
 		return finalResult;
 	}
@@ -213,8 +213,8 @@ protected:
 			return receiveResult;
 		// 接收日志
 		if (enableSendRecvLog)
-			qDebug() << "Received:" << receiveResult.getContent<0>().toHex(' ');
-		return QICResult<QByteArray>::CreateSuccessResult(receiveResult.getContent<0>());
+			qDebug() << "Received:" << receiveResult.getContent0().toHex(' ');
+		return QICResult<QByteArray>::CreateSuccessResult(receiveResult.getContent0());
 	}
 
 private:

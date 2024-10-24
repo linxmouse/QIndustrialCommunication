@@ -27,14 +27,14 @@ public:
 		{
 			if (result.IsSuccess)
 			{
-				return QICResult<TResult>::CreateSuccessResult(func(result.getContent<0>()));
+				return QICResult<TResult>::CreateSuccessResult(func(result.getContent0()));
 			}
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
 		catch (const QException &ex)
 		{
 			QString errorMessage = QString("Data transform error: Length(%1) %2")
-									   .arg(result.getContent<0>().size())
+									   .arg(result.getContent0().size())
 									   .arg(ex.what());
 			return QICResult<TResult>::CreateFailedResult(errorMessage);
 		}
@@ -72,7 +72,7 @@ public:
 		{
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
-		return QICResult<TResult>::CreateSuccessResult(func(result.getContent<0>()));
+		return QICResult<TResult>::CreateSuccessResult(func(result.getContent0()));
 	}
 
 	template <typename TIn>
@@ -82,7 +82,7 @@ public:
 		{
 			return QICResult<>::CreateFailedResult(result);
 		}
-		return func(result.getContent<0>());
+		return func(result.getContent0());
 	}
 
 	template <typename TResult, typename... TArgs>
@@ -111,6 +111,6 @@ private:
 		{
 			return QICResult<TResult>::CreateFailedResult(result);
 		}
-		return InternalGetResultFromOther(func(result.getContent<0>()), others...);
+		return InternalGetResultFromOther(func(result.getContent0()), others...);
 	}
 };

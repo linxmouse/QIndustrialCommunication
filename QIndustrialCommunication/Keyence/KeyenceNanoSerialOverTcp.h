@@ -112,15 +112,15 @@ private:
 		QICResult<QString, int> result = AnalysisAddress(address);
 		if (!result.IsSuccess)
 			return QICResult<QByteArray>::CreateFailedResult(result);
-		if ((result.getContent<0>() == "CTH" || result.getContent<0>() == "CTC" ||
-			 result.getContent<0>() == "C" || result.getContent<0>() == "T") &&
+		if ((result.getContent0() == "CTH" || result.getContent0() == "CTC" ||
+			 result.getContent0() == "C" || result.getContent0() == "T") &&
 			length > 1)
 		{
 			length = static_cast<ushort>(length / 2);
 		}
 		QString packet = QString("RDS %1%2 %3\r")
-							 .arg(result.getContent<0>())
-							 .arg(result.getContent<1>())
+							 .arg(result.getContent0())
+							 .arg(result.getContent1())
 							 .arg(length);
 		QByteArray bytes = packet.toLatin1();
 		return QICResult<QByteArray>::CreateSuccessResult(bytes);
@@ -137,13 +137,13 @@ private:
 			return QICResult<QByteArray>::CreateFailedResult(result);
 		QString packet;
 		QTextStream stream(&packet);
-		stream << "WRS " << result.getContent<0>() << result.getContent<1>() << " ";
-		if (result.getContent<0>() == "DM" ||
-			result.getContent<0>() == "CM" ||
-			result.getContent<0>() == "TM" ||
-			result.getContent<0>() == "EM" ||
-			result.getContent<0>() == "FM" ||
-			result.getContent<0>() == "Z")
+		stream << "WRS " << result.getContent0() << result.getContent1() << " ";
+		if (result.getContent0() == "DM" ||
+			result.getContent0() == "CM" ||
+			result.getContent0() == "TM" ||
+			result.getContent0() == "EM" ||
+			result.getContent0() == "FM" ||
+			result.getContent0() == "Z")
 		{
 			int num = value.size() / 2;
 			stream << num << " ";
@@ -156,9 +156,9 @@ private:
 					stream << " ";
 			}
 		}
-		else if (result.getContent<0>() == "T" ||
-				 result.getContent<0>() == "C" ||
-				 result.getContent<0>() == "CTH")
+		else if (result.getContent0() == "T" ||
+				 result.getContent0() == "C" ||
+				 result.getContent0() == "CTH")
 		{
 			int num = value.size() / 4;
 			stream << num << " ";
@@ -190,7 +190,7 @@ private:
 			stream << "ST ";
 		else
 			stream << "RS ";
-		stream << result.getContent<0>() << result.getContent<1>() << "\r";
+		stream << result.getContent0() << result.getContent1() << "\r";
 		return QICResult<QByteArray>::CreateSuccessResult(packet.toLatin1());
 	}
 
@@ -206,8 +206,8 @@ private:
 		QString packet;
 		QTextStream stream(&packet);
 		stream << "WRS "
-			   << result.getContent<0>()
-			   << result.getContent<1>()
+			   << result.getContent0()
+			   << result.getContent1()
 			   << " "
 			   << values.length();
 		for (auto &value : values)

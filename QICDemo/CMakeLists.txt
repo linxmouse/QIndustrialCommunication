@@ -2,7 +2,7 @@
 add_executable(QICDemo Demo.cpp)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET QICDemo PROPERTY CXX_STANDARD 17)
+  set_property(TARGET QICDemo PROPERTY CXX_STANDARD 11)
 endif()
 
 # 如果QIC的头文件需要特别的包含路径
