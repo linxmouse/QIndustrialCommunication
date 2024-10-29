@@ -104,7 +104,6 @@ public:
         if (address.isEmpty()) return QICResult<S7Address>::CreateFailedResult("Address is empty");
 
         QChar firstChar = address.at(0).toUpper();
-
         // 输入地址以 I 开头，表示输入区（输入信号）
         // Address starts with 'I', indicating input area (input signals)
         if (firstChar == 'I')
@@ -132,11 +131,8 @@ public:
         {
             s7Address.dataCode = 132;  // 数据块区的数据编码
             QStringList sa = address.split('.');
-            if (address.at(1).toUpper() == 'B')
-                s7Address.dbBlock = sa[0].mid(2).toUShort();
-            else
-                s7Address.dbBlock = sa[0].mid(1).toUShort();
-
+            if (address.at(1).toUpper() == 'B') s7Address.dbBlock = sa[0].mid(2).toUShort();
+            else s7Address.dbBlock = sa[0].mid(1).toUShort();
             s7Address.addressStart = CalculateAddressStarted(address.mid(address.indexOf('.') + 1));
         }
         // 计时器的地址处理

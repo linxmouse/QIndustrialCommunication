@@ -25,7 +25,7 @@ public:
 	virtual QICResult<QByteArray> Read(const QString &address, ushort length) = 0;
 	virtual QICResult<> Write(const QString &address, const QByteArray &value) = 0;
 
-	virtual QICResult<> Write(const QString &address, QVector<bool> value)
+	virtual QICResult<> Write(const QString &address, const QVector<bool>& values)
 	{
 		return QICResult<>::CreateFailedResult("Not Supported.");
 	}

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DeviceBase.h"
+#include "EthernetDevice.h"
 
 class ModbusTcpNet : EthernetDevice
 {

@@ -24,9 +24,9 @@ public:
 	~KeyenceNanoSerialOverTcp();
 
 public:
-	/// @brief 让基类中名为 Write 的所有函数在派生类中都是可见的，与派生类自己定义的 Write 函数重载（Overload），而不是被隐藏（Hide）
+	// 让基类中名为 Write 的所有函数在派生类中都是可见的，与派生类自己定义的 Write 函数重载（Overload），而不是被隐藏（Hide）
 	using EthernetDevice::Write;
-	/// @brief 让基类中名为 ReadBool 的所有函数在派生类中都是可见的，与派生类自己定义的 ReadBool 函数重载（Overload），而不是被隐藏（Hide）
+	// 让基类中名为 ReadBool 的所有函数在派生类中都是可见的，与派生类自己定义的 ReadBool 函数重载（Overload），而不是被隐藏（Hide）
 	using EthernetDevice::ReadBool;
 
 	QICResult<QByteArray> Read(const QString &address, ushort length) override;
@@ -37,7 +37,7 @@ public:
 
 	QICResult<> Write(const QString &address, bool value) override;
 
-	QICResult<> Write(const QString &address, QVector<bool> value) override;
+	QICResult<> Write(const QString &address, const QVector<bool>& values) override;
 
 	friend QDebug operator<<(QDebug debug, const KeyenceNanoSerialOverTcp &kvNano)
 	{
@@ -107,9 +107,9 @@ private:
 	/// @param address 字符串地址
 	/// @param length 读取的长度
 	/// @return 读取数据包
-	QICResult<QByteArray> BuildReadPacket(const QString &address, ushort length)
+	QICResult<QByteArray> GenReadBytes(const QString &address, ushort length)
 	{
-		QICResult<QString, int> result = AnalysisAddress(address);
+		QICResult<QString, int> result = ParseAddress(address);
 		if (!result.IsSuccess)
 			return QICResult<QByteArray>::CreateFailedResult(result);
 		if ((result.getContent0() == "CTH" || result.getContent0() == "CTC" ||
@@ -130,9 +130,9 @@ private:
 	/// @param address 字符串地址
 	/// @param value 写入的值
 	/// @return 写入数据包
-	QICResult<QByteArray> BuildWritePacket(const QString &address, const QByteArray &value)
+	QICResult<QByteArray> GenWriteBytes(const QString &address, const QByteArray &value)
 	{
-		QICResult<QString, int> result = AnalysisAddress(address);
+		QICResult<QString, int> result = ParseAddress(address);
 		if (!result.IsSuccess)
 			return QICResult<QByteArray>::CreateFailedResult(result);
 		QString packet;
@@ -179,9 +179,9 @@ private:
 	/// @param address 字符串地址
 	/// @param value 写入的值
 	/// @return 写入数据包
-	QICResult<QByteArray> BuildWritePacket(const QString &address, bool value)
+	QICResult<QByteArray> GenWriteBytes(const QString &address, bool value)
 	{
-		QICResult<QString, int> result = AnalysisAddress(address);
+		QICResult<QString, int> result = ParseAddress(address);
 		if (!result.IsSuccess)
 			return QICResult<QByteArray>::CreateFailedResult(result);
 		QString packet;
@@ -198,9 +198,9 @@ private:
 	/// @param address 字符串地址
 	/// @param value 写入的值
 	/// @return 写入数据包
-	QICResult<QByteArray> BuildWritePacket(const QString &address, QVector<bool> values)
+	QICResult<QByteArray> GenWriteBytes(const QString &address, QVector<bool> values)
 	{
-		QICResult<QString, int> result = AnalysisAddress(address);
+		QICResult<QString, int> result = ParseAddress(address);
 		if (!result.IsSuccess)
 			return QICResult<QByteArray>::CreateFailedResult(result);
 		QString packet;
@@ -337,7 +337,7 @@ private:
 	/// @brief 分析地址信息
 	/// @param address
 	/// @return
-	QICResult<QString, int> AnalysisAddress(QString address)
+	QICResult<QString, int> ParseAddress(QString address)
 	{
 		try
 		{

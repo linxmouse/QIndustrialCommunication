@@ -1,6 +1,6 @@
 #include "KeyenceNanoSerialOverTcp.h"
 #include "SiemensS7Net.h"
-#include <array>
+#include <QtMath>
 
 int main(int argc, char* argv[])
 {
@@ -84,6 +84,22 @@ int main(int argc, char* argv[])
 	{
 		qDebug() << QString("Array's index %1 value ").arg(index++) << v;
 	}
+
+	QICResult<bool> rBoolean = s7Net.ReadBool("db3400.5");
+	qDebug() << "Read db3400.5 boolean's value: " << rBoolean.getContent0();
+	rBoolean = s7Net.ReadBool("db3400.6");
+	qDebug() << "Read db3400.6 boolean's value: " << rBoolean.getContent0();
+	rBoolean = s7Net.ReadBool("db3400.7");
+	qDebug() << "Read db3400.7 boolean's value: " << rBoolean.getContent0();
+
+	auto isWriteSucc = s7Net.Write("db3400.5.1", true);
+	isWriteSucc = s7Net.Write("db3400.10", (int)123456);
+	isWriteSucc = s7Net.Write("db3400.20", (uint)123456789);
+
+	QVector<bool> values{ true, false, true, false, true, false };
+	isWriteSucc = s7Net.Write("db3400.30", values);
+
+	auto rBooleans = s7Net.ReadBool("db3400.5.1");
 #endif // 1 // Î÷ÃÅ×ÓS7²âÊÔ
 
 

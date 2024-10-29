@@ -1,6 +1,6 @@
 #include "SiemensS7Net.h"
 
-SiemensS7Net::SiemensS7Net(SiemensPLCS siemens, QString ipAddr, QObject* parent)
+SiemensS7Net::SiemensS7Net(SiemensPLCS siemens, const QString& ipAddr, QObject* parent)
 	: EthernetDevice(parent),
 	plcHead1(QByteArray::fromRawData("\x03\x00\x00\x16\x11\xE0\x00\x00\x00\x01\x00\xC0\x01\x0A\xC1\x02\x01\x02\xC2\x02\x01\x00", 22)),
 	plcHead2(QByteArray::fromRawData("\x03\x00\x00\x19\x02\xF0\x80\x32\x01\x00\x00\x04\x00\x00\x08\x00\x00\xF0\x00\x00\x01\x00\x01\x01\xE0", 25)),
@@ -20,7 +20,7 @@ SiemensS7Net::~SiemensS7Net()
 {
 }
 
-void SiemensS7Net::Initializetion(SiemensPLCS siemens, QString ipAddr)
+void SiemensS7Net::Initializetion(SiemensPLCS siemens, const QString& ipAddr)
 {
 	EthernetDevice::WordLenght = 2;
 	this->ipAddr = ipAddr;
@@ -118,6 +118,14 @@ QICResult<> SiemensS7Net::Stop()
 	return checkStopResult(r.getContent0());
 }
 
+QICResult<bool> SiemensS7Net::ReadBool(const QString& address)
+{
+	auto result = ReadAddressBit(address);
+	if (!result.IsSuccess) return QICResult<bool>::CreateFailedResult(result);
+	auto content = result.getContent0();
+	return QICResult<bool>::CreateSuccessResult(content.at(0) != 0);
+}
+
 QICResult<QByteArray> SiemensS7Net::Read(const QString& address, ushort length)
 {
 	// 1. 解析地址字符串,获取 S7Address 对象
@@ -146,54 +154,91 @@ QICResult<QByteArray> SiemensS7Net::Read(const QString& address, ushort length)
 
 QICResult<QByteArray> SiemensS7Net::Read(const QStringList& addresses, const QVector<quint16>& length)
 {
-	QVector<S7Address> s7Addr(addresses.length());
+	// 创建用于存储解析后的S7Address对象的向量，长度与地址列表相同
+	QVector<S7Address> s7Addrs(addresses.length());
+	// 循环解析每个地址，并检查解析结果是否成功
 	for (int i = 0; i < addresses.length(); i++)
 	{
+		// 使用S7Address的静态方法从地址字符串和长度中解析出S7Address对象
 		QICResult<S7Address> r = S7Address::ParseFrom(addresses[i], length[i]);
+		// 如果解析失败，返回失败的QICResult对象
 		if (!r.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(r);
-		s7Addr[i] = r.getContent0();
+		// 将成功解析的S7Address存储到s7Addr向量中
+		s7Addrs[i] = r.getContent0();
 	}
-	return Read(s7Addr);
+	// 调用内部的Read方法，传入解析后的S7Address列表
+	return Read(s7Addrs);
 }
 
 QICResult<QByteArray> SiemensS7Net::Read(const QVector<S7Address>& addresses)
 {
+	// 如果地址数量超过19个，需要分批处理
 	if (addresses.size() > 19)
 	{
+		// 创建结果字节数组
 		QByteArray result;
+		// 分批读取，每次最多读取19个地址
 		for (int i = 0; i < addresses.size(); i += 19)
 		{
+			// 使用mid方法截取当前的地址子集，每次最多19个地址
 			QVector<S7Address> chunk = addresses.mid(i, qMin(19, addresses.size() - i));
+			// 读取当前子集的数据
 			QICResult<QByteArray> chunkResult = Read(chunk);
+			// 如果某一子集读取失败，返回失败的QICResult对象
 			if (!chunkResult.IsSuccess) return chunkResult;
+			// 将读取到的字节数据追加到结果中
 			result.append(chunkResult.getContent0());
 		}
+		// 返回成功的QICResult对象，包含读取到的完整数据
 		return QICResult<QByteArray>::CreateSuccessResult(result);
 	}
-	return ReadS7Address(addresses);
+	// 如果地址数量小于或等于19个，直接读取
+	return ReadAddressData(addresses);
 }
 
-QICResult<> SiemensS7Net::Write(const QString& address, const QByteArray& value)
+QICResult<QByteArray> SiemensS7Net::ReadAddressBit(const QString& address)
 {
-	return QICResult<>();
+	QICResult<QByteArray> result = GenBitReadBytes(address);
+	if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
+	result = ReadFromCoreServer(result.getContent0());
+	if (!result.IsSuccess) return result;
+	return ParseReadBit(result.getContent0());
 }
 
-QICResult<QByteArray> SiemensS7Net::BuildReadPacket(const QVector<S7Address>& addresses)
+QICResult<QByteArray> SiemensS7Net::ReadAddressData(const QVector<S7Address>& addresses)
 {
+	// 构建读取数据包
+	QICResult<QByteArray> r = GenReadBytes(addresses);
+	// 如果构建失败，返回失败结果
+	if (!r.IsSuccess) return r;
+	// 发送请求到核心服务器并读取返回数据
+	r = ReadFromCoreServer(r.getContent0());
+	// 如果读取失败，返回失败结果
+	if (!r.IsSuccess) return r;
+	// 解析读取的字节数据
+	return ParseReadBytes(addresses, r.getContent0());
+}
+
+QICResult<QByteArray> SiemensS7Net::GenReadBytes(const QVector<S7Address>& addresses)
+{
+	// 如果地址列表为空，返回失败结果
 	if (addresses.isEmpty()) return QICResult<QByteArray>::CreateFailedResult("S7 Addresses is empty");
+	// 如果地址数量超过19个，返回失败结果
 	if (addresses.size() > 19) return QICResult<QByteArray>::CreateFailedResult("The number of Addresses read cannot be greater than 19");
+	// 初始化字节数组，长度为固定部分19字节加上每个地址12字节
 	int addrSize = addresses.size();
 	QByteArray bytes(19 + addrSize * 12, Qt::Uninitialized);
-	bytes[0] =	static_cast<char>(3);
-	bytes[1] =	static_cast<char>(0);
-	bytes[2] =	static_cast<char>(bytes.length() / 256);
-	bytes[3] =	static_cast<char>(bytes.length() % 256);
-	bytes[4] =	static_cast<char>(2);
-	bytes[5] =	static_cast<char>(240);
-	bytes[6] =	static_cast<char>(128);
-	bytes[7] =	static_cast<char>(50);
-	bytes[8] =	static_cast<char>(1);
-	bytes[9] =	static_cast<char>(0);
+	// 填充前19字节的固定请求头信息
+	bytes[0]  =	static_cast<char>(3);
+	bytes[1]  =	static_cast<char>(0);
+	bytes[2]  =	static_cast<char>(bytes.length() / 256);
+	bytes[3]  =	static_cast<char>(bytes.length() % 256);
+	bytes[4]  =	static_cast<char>(2);
+	bytes[5]  =	static_cast<char>(240);
+	bytes[6]  =	static_cast<char>(128);
+	bytes[7]  =	static_cast<char>(50);
+	bytes[8]  =	static_cast<char>(1);
+	bytes[9]  =	static_cast<char>(0);
 	bytes[10] = static_cast<char>(0);
 	bytes[11] = static_cast<char>(0);
 	bytes[12] = static_cast<char>(1);
@@ -203,6 +248,7 @@ QICResult<QByteArray> SiemensS7Net::BuildReadPacket(const QVector<S7Address>& ad
 	bytes[16] = static_cast<char>(0);
 	bytes[17] = static_cast<char>(4);
 	bytes[18] = static_cast<char>(addrSize);
+	// 填充每个S7地址的信息
 	for (int i = 0; i < addrSize; i++)
 	{
 		bytes[19 + i * 12] = static_cast<char>(18);
@@ -218,24 +264,29 @@ QICResult<QByteArray> SiemensS7Net::BuildReadPacket(const QVector<S7Address>& ad
 		bytes[29 + i * 12] = static_cast<char>(addresses[i].addressStart / 256 % 256);
 		bytes[30 + i * 12] = static_cast<char>(addresses[i].addressStart % 256);
 	}
+	// 返回成功的QICResult对象，包含构建好的数据包
 	return QICResult<QByteArray>::CreateSuccessResult(bytes);
 }
 
-QICResult<QByteArray> SiemensS7Net::BuildBitReadPacket(const QString& address)
+QICResult<QByteArray> SiemensS7Net::GenBitReadBytes(const QString& address)
 {
+	// 解析地址字符串为S7Address对象
 	QICResult<S7Address> r = S7Address::ParseFrom(address);
+	// 如果解析失败，返回失败的QICResult对象
 	if (!r.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(r);
+	// 初始化请求的字节数组
 	QByteArray bytes(31, Qt::Uninitialized);
-	bytes[0] =	static_cast<char>(3);
-	bytes[1] =	static_cast<char>(0);
-	bytes[2] =	static_cast<char>(bytes.length() / 256);
-	bytes[3] =	static_cast<char>(bytes.length() % 256);
-	bytes[4] =	static_cast<char>(2);
-	bytes[5] =	static_cast<char>(240);
-	bytes[6] =	static_cast<char>(128);
-	bytes[7] =	static_cast<char>(50);
-	bytes[8] =	static_cast<char>(1);
-	bytes[9] =	static_cast<char>(0);
+	// 填充请求数据包的固定头部信息
+	bytes[0]  = static_cast<char>(3);
+	bytes[1]  = static_cast<char>(0);
+	bytes[2]  = static_cast<char>(bytes.length() / 256);
+	bytes[3]  = static_cast<char>(bytes.length() % 256);
+	bytes[4]  = static_cast<char>(2);
+	bytes[5]  = static_cast<char>(240);
+	bytes[6]  = static_cast<char>(128);
+	bytes[7]  = static_cast<char>(50);
+	bytes[8]  = static_cast<char>(1);
+	bytes[9]  = static_cast<char>(0);
 	bytes[10] = static_cast<char>(0);
 	bytes[11] = static_cast<char>(0);
 	bytes[12] = static_cast<char>(1);
@@ -245,6 +296,7 @@ QICResult<QByteArray> SiemensS7Net::BuildBitReadPacket(const QString& address)
 	bytes[16] = static_cast<char>(0);
 	bytes[17] = static_cast<char>(4);
 	bytes[18] = static_cast<char>(1);
+	// 填充解析出的S7Address信息
 	bytes[19] = static_cast<char>(18);
 	bytes[20] = static_cast<char>(10);
 	bytes[21] = static_cast<char>(16);
@@ -257,19 +309,11 @@ QICResult<QByteArray> SiemensS7Net::BuildBitReadPacket(const QString& address)
 	bytes[28] = static_cast<char>(r.getContent0().addressStart / 256 / 256 % 256);
 	bytes[29] = static_cast<char>(r.getContent0().addressStart / 256 % 256);
 	bytes[30] = static_cast<char>(r.getContent0().addressStart % 256);
+	// 返回成功的QICResult对象，包含构建好的数据包
 	return QICResult<QByteArray>::CreateSuccessResult(bytes);
 }
 
-QICResult<QByteArray> SiemensS7Net::ReadS7Address(const QVector<S7Address>& addresses)
-{
-	QICResult<QByteArray> r = BuildReadPacket(addresses);
-	if (!r.IsSuccess) return r;
-	r = ReadFromCoreServer(r.getContent0());
-	if (!r.IsSuccess) return r;
-	return ParseReadByte(addresses, r.getContent0());
-}
-
-QICResult<QByteArray> SiemensS7Net::ParseReadByte(const QVector<S7Address>& addresses, const QByteArray& content)
+QICResult<QByteArray> SiemensS7Net::ParseReadBytes(const QVector<S7Address>& addresses, const QByteArray& content)
 {
 	// 计算所有地址长度的总和
 	int totalLength = 0;
@@ -338,4 +382,154 @@ QICResult<QByteArray> SiemensS7Net::ParseReadBit(const QByteArray& content)
 	}
 	// 如果数据长度或地址数量验证失败，返回失败结果
 	return QICResult<QByteArray>::CreateFailedResult("Data block length verification fails. Check whether put/get and db block optimization are enabled");
+}
+
+QICResult<> SiemensS7Net::WritePLC(const QByteArray& bytes)
+{
+	auto rcvRt = ReadFromCoreServer(bytes);
+	if (!rcvRt.IsSuccess) return QICResult<>::CreateFailedResult(rcvRt);
+	return ParseWrite(rcvRt.getContent0());
+}
+
+QICResult<> SiemensS7Net::Write(const QString& address, const QByteArray& value)
+{
+	QICResult<S7Address> addressRt = S7Address::ParseFrom(address);
+	if (!addressRt.IsSuccess) return QICResult<>::CreateFailedResult(addressRt);
+	
+	int totalBytesNum = value.size();
+	int writedBytesNum = 0;
+	S7Address s7Address = addressRt.getContent0();
+	while (writedBytesNum < totalBytesNum)
+	{
+		ushort toWriteBytesNum = qMin(totalBytesNum - writedBytesNum, pduLength);
+		auto bytes = value.mid(writedBytesNum, toWriteBytesNum);
+		QICResult<QByteArray> packedBytesRt = GenWriteBytes(s7Address, bytes);
+		if (!packedBytesRt.IsSuccess) return QICResult<>::CreateFailedResult(packedBytesRt);
+		QICResult<> isSuc = WritePLC(packedBytesRt.getContent0());
+		if (!isSuc.IsSuccess) return isSuc;
+		writedBytesNum += toWriteBytesNum;
+		s7Address.addressStart += toWriteBytesNum * 8;
+	}
+	return QICResult<>::CreateSuccessResult();
+}
+
+QICResult<> SiemensS7Net::Write(const QString& address, bool value)
+{
+	QICResult<QByteArray> packedBytesRt = GenBitWriteBytes(address, value);
+	if (!packedBytesRt.IsSuccess) return QICResult<>::CreateFailedResult(packedBytesRt);
+	return WritePLC(packedBytesRt.getContent0());
+}
+
+QICResult<> SiemensS7Net::Write(const QString& address, const QVector<bool>& values)
+{
+	QByteArray bytes = BoolVectorToByteArray(values);
+	return Write(address, bytes);
+}
+
+QICResult<QByteArray> SiemensS7Net::GenWriteBytes(const S7Address& address, const QByteArray& data)
+{
+	QByteArray array(35 + data.size(), Qt::Uninitialized);
+	array[0]  = static_cast<char>(3);
+	array[1]  = static_cast<char>(0);
+	array[2]  = static_cast<char>((35 + data.size()) / 256);
+	array[3]  = static_cast<char>((35 + data.size()) % 256);
+	array[4]  = static_cast<char>(2);
+	array[5]  = static_cast<char>(240);
+	array[6]  = static_cast<char>(128);
+	array[7]  = static_cast<char>(50);
+	array[8]  = static_cast<char>(1);
+	array[9]  = static_cast<char>(0);
+	array[10] = static_cast<char>(0);
+	array[11] = static_cast<char>(0);
+	array[12] = static_cast<char>(1);
+	array[13] = static_cast<char>(0);
+	array[14] = static_cast<char>(14);
+	array[15] = static_cast<char>((4 + data.size()) / 256);
+	array[16] = static_cast<char>((4 + data.size()) % 256);
+	array[17] = static_cast<char>(5);
+	array[18] = static_cast<char>(1);
+	array[19] = static_cast<char>(18);
+	array[20] = static_cast<char>(10);
+	array[21] = static_cast<char>(16);
+	array[22] = static_cast<char>(2);
+	array[23] = static_cast<char>(data.size() / 256);
+	array[24] = static_cast<char>(data.size() % 256);
+	array[25] = static_cast<char>(address.dbBlock / 256);
+	array[26] = static_cast<char>(address.dbBlock % 256);
+	array[27] = static_cast<char>(address.dataCode);
+	array[28] = static_cast<char>(address.addressStart / 256 / 256 % 256);
+	array[29] = static_cast<char>(address.addressStart / 256 % 256);
+	array[30] = static_cast<char>(address.addressStart % 256);
+	array[31] = static_cast<char>(0);
+	array[32] = static_cast<char>(4);
+	array[33] = static_cast<char>(data.size() * 8 / 256);
+	array[34] = static_cast<char>(data.size() * 8 % 256);
+	array.replace(35, data.size(), data);
+	return QICResult<QByteArray>::CreateSuccessResult(array);
+}
+
+QICResult<QByteArray> SiemensS7Net::GenBitWriteBytes(const QString& address, bool value)
+{
+	QICResult<S7Address> addressRt = S7Address::ParseFrom(address);
+	if (!addressRt.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(addressRt);
+	
+	S7Address s7Addr = addressRt.getContent0();
+	QByteArray data(1, value ? 1 : 0);
+	QByteArray array(35 + data.size(), Qt::Uninitialized);
+	array[0]  = static_cast<char>(3);
+	array[1]  = static_cast<char>(0);
+	array[2]  = static_cast<char>((35 + data.size()) / 256);
+	array[3]  = static_cast<char>((35 + data.size()) % 256);
+	array[4]  = static_cast<char>(2);
+	array[5]  = static_cast<char>(240);
+	array[6]  = static_cast<char>(128);
+	array[7]  = static_cast<char>(50);
+	array[8]  = static_cast<char>(1);
+	array[9]  = static_cast<char>(0);
+	array[10] = static_cast<char>(0);
+	array[11] = static_cast<char>(0);
+	array[12] = static_cast<char>(1);
+	array[13] = static_cast<char>(0);
+	array[14] = static_cast<char>(14);
+	array[15] = static_cast<char>((4 + data.size()) / 256);
+	array[16] = static_cast<char>((4 + data.size()) % 256);
+	array[17] = static_cast<char>(5);
+	array[18] = static_cast<char>(1);
+	array[19] = static_cast<char>(18);
+	array[20] = static_cast<char>(10);
+	array[21] = static_cast<char>(16);
+	array[22] = static_cast<char>(1);
+	array[23] = static_cast<char>(data.size() / 256);
+	array[24] = static_cast<char>(data.size() % 256);
+	array[25] = static_cast<char>(s7Addr.dbBlock / 256);
+	array[26] = static_cast<char>(s7Addr.dbBlock % 256);
+	array[27] = static_cast<char>(s7Addr.dataCode);
+	array[28] = static_cast<char>(s7Addr.addressStart / 256 / 256 % 256);
+	array[29] = static_cast<char>(s7Addr.addressStart / 256 % 256);
+	array[30] = static_cast<char>(s7Addr.addressStart % 256);
+	if (s7Addr.dataCode == 28)
+	{
+		array[31] = static_cast<char>(0);
+		array[32] = static_cast<char>(9);
+	}
+	else 
+	{
+		array[31] = static_cast<char>(0);
+		array[32] = static_cast<char>(3);
+	}
+	array[33] = static_cast<char>(data.size() * 8 / 256);
+	array[34] = static_cast<char>(data.size() * 8 % 256);
+	array.replace(35, data.size(), data);
+	return QICResult<QByteArray>::CreateSuccessResult(array);
+}
+
+QICResult<> SiemensS7Net::ParseWrite(const QByteArray& content)
+{
+	quint8 ch = content.at(content.size() - 1);
+	if (ch != 0xFF)
+	{
+		QString message = QString("Write data exception, \nData: %1").arg(QString::fromLatin1(content.toHex(' ')));
+		return QICResult<>(false, message, ch);
+	}
+	return QICResult<>::CreateSuccessResult();
 }
