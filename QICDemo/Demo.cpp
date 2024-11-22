@@ -1,6 +1,8 @@
+#include <QtMath>
+
 #include "KeyenceNanoSerialOverTcp.h"
 #include "SiemensS7Net.h"
-#include <QtMath>
+#include "BytesOrderHelper.h"
 
 int main(int argc, char* argv[])
 {
@@ -69,7 +71,7 @@ int main(int argc, char* argv[])
 	else qWarning() << dm88r.Message;
 #endif // 0 // 基恩士测试
 
-#if 1 // 西门子S7测试
+#if 0 // 西门子S7测试
 	SiemensS7Net s7Net(SiemensPLCS::S1200, "127.0.0.1");
 	s7Net.DisableSendRecvLog();
 
@@ -101,6 +103,13 @@ int main(int argc, char* argv[])
 
 	auto rBooleans = s7Net.ReadBool("db3400.5.1");
 #endif // 1 // 西门子S7测试
+
+#if 1 // 测试本地字节序到网络字节序的转换
+	if (BytesOrderHelper::isLittleEndian()) qDebug() << QString::fromLocal8Bit("运行在小端系统上");
+	quint16 value = 0x1234;
+	quint16 networkValue = BytesOrderHelper::toNetworkOrder(value);
+	quint16 rcvValue = BytesOrderHelper::fromNetworkOrder(networkValue);
+#endif // 1
 
 
 	system("pause");
