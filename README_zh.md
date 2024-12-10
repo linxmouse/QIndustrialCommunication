@@ -15,7 +15,7 @@
 
 - **核心能力**:
   - 支持多种数据类型的读写操作
-  - 布尔、整数、字符串和数组数据支持
+  - 布尔、整数、浮点型、字符串和数组数据支持
   - 网络字节序转换
   - 使用 `QICResult` 模板类的健壮错误处理
   - Qt 框架无缝集成
@@ -31,7 +31,7 @@
 ### 克隆仓库
 
 ```bash
-git clone https://github.com/yourusername/qt-industrial-communication.git
+git clone https://github.com/linxmouse/QIndustrialCommunication.git
 cd qt-industrial-communication
 ```
 
@@ -90,7 +90,7 @@ auto isWriteSucc = s7Net.Write("db3400.5.1", true);
 
 ## 许可证
 
-[在此指定您的许可证，例如 MIT、Apache 2.0]
+[GPL-3.0 license](LICENSE.txt)
 
 ## 鸣谢
 

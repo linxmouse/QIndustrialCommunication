@@ -1,6 +1,6 @@
-# Qt Industrial Communication Library
+﻿# Qt Industrial Communication Library
 
-[���İ汾](README_zh.md) | English
+[中文版本](README_zh.md) | English
 
 ## Overview
 
@@ -15,7 +15,7 @@ This Qt-based industrial communication library provides a robust and easy-to-use
 
 - **Key Capabilities**:
   - Read/write operations for various data types
-  - Support for boolean, integer, string, and array data
+  - Support for boolean, integer, float, string, and array data
   - Network byte order conversion
   - Robust error handling with `QICResult` template class
   - Qt framework integration
@@ -31,7 +31,7 @@ This Qt-based industrial communication library provides a robust and easy-to-use
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/qt-industrial-communication.git
+git clone https://github.com/linxmouse/QIndustrialCommunication.git
 cd qt-industrial-communication
 ```
 
@@ -90,7 +90,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-[Specify your license here, e.g., MIT, Apache 2.0]
+[GPL-3.0 license](LICENSE.txt)
 
 ## Acknowledgements
 
