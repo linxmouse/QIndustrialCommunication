@@ -1,77 +1,97 @@
-# QIndustrialCommunication
+# Qt Industrial Communication Library
 
-### 3.1 EthernetBase类
+[���İ汾](README_zh.md) | English
 
-**3.1.1** **设计原理**
+## Overview
 
-以接口为主导的设计，提供了一组定义良好的操作，使得继承者可以具体实现细节，而不改变接口行为。
+This Qt-based industrial communication library provides a robust and easy-to-use solution for communicating with industrial PLCs and devices using various protocols. Inspired by the HslCommunication library, this project aims to simplify industrial communication in C++ applications.
 
-**3.1.2** **技术挑战**
+## Features
 
-抽象化通信过程：设计一个既能满足一般需求又足够灵活以适应特定场景的通信接口。
+- **Supported Protocols**:
+  - Keyence Nano Serial over TCP
+  - Siemens S7 (S1200 and other variants)
+  - Modbus TCP (Planned)
 
-解决方案：采用纯虚函数和面向接口编程思想，提供了一组基础功能和待实现的接口。
+- **Key Capabilities**:
+  - Read/write operations for various data types
+  - Support for boolean, integer, string, and array data
+  - Network byte order conversion
+  - Robust error handling with `QICResult` template class
+  - Qt framework integration
 
-### 3.2 EthernetDeviceBase类
+## Requirements
 
-**3.2.1** **设计原理**
+- Qt 5.x or Qt 6.x
+- C++11 or later
+- CMake 3.10+
 
-继承自 EthernetBase，具体实现了基于以太网的设备通信功能。
+## Installation
 
-**3.2.2** **技术挑战**
+### Clone the Repository
 
-稳定性和效率：在保证通信稳定的同时，需要高效处理大量数据。
+```bash
+git clone https://github.com/yourusername/qt-industrial-communication.git
+cd qt-industrial-communication
+```
 
-解决方案：采用了高效的数据缓冲和处理机制，以及稳健的错误处理策略。
+### Build with CMake
 
-### 3.3 QICResult类
+```bash
+mkdir build
+cd build
+cmake ..
+make
+```
 
-**3.3.1** **设计原理**
+## Usage Examples
 
-统一的结果表示方式，使得函数返回值包含成功或失败的状态，以及相关数据或错误信息。
+### Keyence Nano Serial over TCP
 
-**3.3.2** **技术挑战**
+```cpp
+KeyenceNanoSerialOverTcp overTcp{ "192.168.0.78", 8501, true, false };
 
-结果表示的通用性：需要适应不同类型的返回值和错误信息。
+// Write a boolean value
+auto r305w = overTcp.Write("R305", true);
+if (r305w.IsSuccess) {
+    qDebug() << "Write to R305 successful";
+}
 
-解决方案：采用泛型和元组，灵活表示各种类型的结果。
+// Read a 16-bit unsigned integer
+auto dm84r = overTcp.ReadUInt16("dm84");
+if (dm84r.IsSuccess) {
+    qDebug() << "DM84 value: " << dm84r.getContent0();
+}
+```
 
-### 3.4 QICResultTranslator类
+### Siemens S7
 
-**3.4.1** **设计原理**
+```cpp
+SiemensS7Net s7Net(SiemensPLCS::S1200, "127.0.0.1");
 
-提供了一系列静态方法，用于转换和操作 QICResult 对象，减少重复代码和提高代码的可维护性。
+// Read an integer from a specific DB
+QICResult<int> rInt = s7Net.ReadInt32("DB3400.0");
+qDebug() << "Read Int32 value: " << rInt.getContent0();
 
-**3.4.2** **技术挑战**
+// Write a boolean value
+auto isWriteSucc = s7Net.Write("db3400.5.1", true);
+```
 
-类型安全的转换：需要确保转换过程中的类型安全。
+## Planned Features
 
-解决方案：使用模板和类型推断，确保类型安全和转换的准确性。
+- [ ] Modbus TCP support
+- [ ] Additional PLC protocol implementations
+- [ ] Enhanced logging and diagnostics
+- [ ] Performance optimizations
 
-### 3.5 KeyenceNanoSerialOverTcp类
+## Contributing
 
-**3.5.1** **程序描述**
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-KeyenceNanoSerialOverTcp 类负责实现与 Keyence Nano 系列控制器的通信。该类通过 TCP/IP 协议与控制器进行数据交换，是工业通信项目中的关键组件。
+## License
 
-**3.5.2** **功能**
+[Specify your license here, e.g., MIT, Apache 2.0]
 
-连接管理：建立和维护与 Keyence 控制器的 TCP 连接。
+## Acknowledgements
 
-数据传输：实现数据的发送和接收，包括对控制器命令的编码和解码。
-
-错误处理：处理通信过程中的异常和错误，确保通信的稳定性。
-
-**3.5.3** **性能**
-
-高效通信：优化的 TCP 通信机制，保证数据传输的高效性。
-
-稳定性：强大的错误处理和异常管理，确保与控制器的稳定连接。
-
-**3.5.4** **实现细节**
-
-使用 QTcpSocket 类进行网络通信。
-
-封装了与 Keyence 控制器特定的通信协议。
-
-提供了用于数据编码和解码的方法，以符合控制器的通信标准。
+Inspired by the HslCommunication library.

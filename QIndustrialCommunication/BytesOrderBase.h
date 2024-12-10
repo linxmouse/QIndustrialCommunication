@@ -613,6 +613,7 @@ private:
 		for (int i = 0; i < array.size() / 2; ++i)
 		{
 			// 将当前字节与下一个字节交换
+			//std::swap(array[i * 2], array[i * 2 + 1]);
 			char temp = array[i * 2];
 			array[i * 2] = array[i * 2 + 1];
 			array[i * 2 + 1] = temp;
