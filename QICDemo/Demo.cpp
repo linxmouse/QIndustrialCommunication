@@ -104,13 +104,33 @@ int main(int argc, char* argv[])
 	auto rBooleans = s7Net.ReadBool("db3400.5.1");
 #endif // 1 // 西门子S7测试
 
-#if 1 // 测试本地字节序到网络字节序的转换
+#if 0 // 测试本地字节序到网络字节序的转换
 	if (BytesOrderHelper::isLittleEndian()) qDebug() << QString::fromLocal8Bit("运行在小端系统上");
 	quint16 value = 0x1234;
 	quint16 networkValue = BytesOrderHelper::toNetworkOrder(value);
 	quint16 rcvValue = BytesOrderHelper::fromNetworkOrder(networkValue);
 #endif // 1
 
+#if 1 // 测试不同大小和不同格式的数据转换的可逆性
+	int intValue = 0x12345678;
+	short shortValue = 0x1234;
+	qint64 longValue = 0x123456789ABCDEF0LL;
+
+	BytesOrderBase::testConversion<int>(intValue, DataFormat::ABCD);
+	BytesOrderBase::testConversion<int>(intValue, DataFormat::BADC);
+	BytesOrderBase::testConversion<int>(intValue, DataFormat::CDAB);
+	BytesOrderBase::testConversion<int>(intValue, DataFormat::DCBA);
+
+	BytesOrderBase::testConversion<short>(shortValue, DataFormat::ABCD);
+	BytesOrderBase::testConversion<short>(shortValue, DataFormat::DCBA);
+	BytesOrderBase::testConversion<short>(shortValue, DataFormat::BADC);
+	BytesOrderBase::testConversion<short>(shortValue, DataFormat::CDAB);
+
+	BytesOrderBase::testConversion<long>(longValue, DataFormat::ABCD);
+	BytesOrderBase::testConversion<long>(longValue, DataFormat::DCBA);
+	BytesOrderBase::testConversion<long>(longValue, DataFormat::BADC);
+	BytesOrderBase::testConversion<long>(longValue, DataFormat::CDAB);
+#endif
 
 	system("pause");
 }

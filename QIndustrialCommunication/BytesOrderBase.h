@@ -459,6 +459,50 @@ public:
 		return bytes;
 	}
 
+	/**
+	 * 
+	 ABCD (大端序)：
+	 第一次转换：不变
+	 第二次转换：仍然不变
+	 结论：会还原到原始状态
+	 DCBA (小端序)：
+	 第一次转换：完全反转字节顺序
+	 第二次转换：再次完全反转
+	 结论：会还原到原始状态
+	 BADC (中间交换大端序)：
+	 第一次转换：按照特定规则交换
+	 第二次转换：按照相同规则交换
+	 结论：会还原到原始状态
+	 CDAB (中间交换小端序)：
+	 第一次转换：按照特定规则交换
+	 第二次转换：按照相同规则交换
+	 结论：会还原到原始状态
+	 */
+	template<typename T>
+	static void testConversion(T originalValue, DataFormat format) 
+	{
+		BytesOrderBase converter(format);
+		// 将原始值转换为字节数组
+		QByteArray originalBytes = QByteArray::fromRawData(reinterpret_cast<const char*>(&originalValue), sizeof(T));
+		// 第一次转换
+		QByteArray firstConvert;
+		if (sizeof(T) == 2) firstConvert = converter.ByteTransDataFormat2(originalBytes);
+		else if (sizeof(T) == 4) firstConvert = converter.ByteTransDataFormat4(originalBytes);
+		else if (sizeof(T) == 8) firstConvert = converter.ByteTransDataFormat8(originalBytes);
+		// 第二次转换
+		QByteArray secondConvert;
+		if (sizeof(T) == 2) secondConvert = converter.ByteTransDataFormat2(firstConvert);
+		else if (sizeof(T) == 4) secondConvert = converter.ByteTransDataFormat4(firstConvert);
+		else if (sizeof(T) == 8) secondConvert = converter.ByteTransDataFormat8(firstConvert);
+		// 比较原始值和二次转换后的值
+		T recoveredValue;
+		std::memcpy(&recoveredValue, secondConvert.constData(), sizeof(T));
+		qDebug() << "Original Format: " << format;
+		qDebug() << "Original Value:  " << QString::number(originalValue, 16).toUpper();
+		qDebug() << "Recovered Value: " << QString::number(recoveredValue, 16).toUpper();
+		qDebug() << "Match:           " << (originalValue == recoveredValue ? "Yes" : "No");
+	}
+
 protected:
 	/**
 	 * @brief Convert 2-byte data according to specified format
