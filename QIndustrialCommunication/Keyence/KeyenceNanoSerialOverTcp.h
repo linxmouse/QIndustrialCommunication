@@ -19,8 +19,7 @@ class KeyenceNanoSerialOverTcp : public EthernetDevice
 	Q_OBJECT
 
 public:
-	KeyenceNanoSerialOverTcp(QString ipAddr, int port, bool isPersistentConn, bool enableSendRecvLog,
-							 int connectTimeOut = 3000, int receiveTimeOut = 3000, QObject *parent = nullptr);
+	KeyenceNanoSerialOverTcp(QString ipAddr, int port, bool isPersistentConn, bool enableSendRecvLog, int connectTimeOut = 3000, int receiveTimeOut = 3000, QObject *parent = nullptr);
 	~KeyenceNanoSerialOverTcp();
 
 public:

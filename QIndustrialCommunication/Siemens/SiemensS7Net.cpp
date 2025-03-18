@@ -18,6 +18,7 @@ SiemensS7Net::SiemensS7Net(SiemensPLCS siemens, const QString& ipAddr, QObject* 
 
 SiemensS7Net::~SiemensS7Net()
 {
+	CloseConnect();
 }
 
 void SiemensS7Net::Initializetion(SiemensPLCS siemens, const QString& ipAddr)

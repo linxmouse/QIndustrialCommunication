@@ -11,8 +11,8 @@
 class SiemensS7Net : public EthernetDevice
 {
 	Q_OBJECT
-		Q_PROPERTY(quint8 plcRack READ getPlcRack WRITE setPlcRack)
-		Q_PROPERTY(quint8 plcSlot READ getPlcSlot WRITE setPlcSlot)
+	Q_PROPERTY(quint8 plcRack READ getPlcRack WRITE setPlcRack)
+	Q_PROPERTY(quint8 plcSlot READ getPlcSlot WRITE setPlcSlot)
 
 public:
 	explicit SiemensS7Net(SiemensPLCS siemens, const QString& ipAddr, QObject* parent = nullptr);

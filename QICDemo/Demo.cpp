@@ -2,7 +2,8 @@
 
 #include "KeyenceNanoSerialOverTcp.h"
 #include "SiemensS7Net.h"
-#include "BytesOrderHelper.h"
+#include "ModbusTcpNet.h"
+//#include "BytesOrderHelper.h"
 
 int main(int argc, char* argv[])
 {
@@ -69,7 +70,7 @@ int main(int argc, char* argv[])
 	dm88r = overTcp.ReadString("dm88", 2);
 	if (dm88r.IsSuccess) qDebug() << "dm88's value: " << dm88r.getContent0();
 	else qWarning() << dm88r.Message;
-#endif // 0 // 基恩士测试
+#endif // 基恩士测试
 
 #if 0 // 西门子S7测试
 	SiemensS7Net s7Net(SiemensPLCS::S1200, "127.0.0.1");
@@ -102,16 +103,16 @@ int main(int argc, char* argv[])
 	isWriteSucc = s7Net.Write("db3400.30", values);
 
 	auto rBooleans = s7Net.ReadBool("db3400.5.1");
-#endif // 1 // 西门子S7测试
+#endif // 西门子S7测试
 
 #if 0 // 测试本地字节序到网络字节序的转换
 	if (BytesOrderHelper::isLittleEndian()) qDebug() << QString::fromLocal8Bit("运行在小端系统上");
 	quint16 value = 0x1234;
 	quint16 networkValue = BytesOrderHelper::toNetworkOrder(value);
 	quint16 rcvValue = BytesOrderHelper::fromNetworkOrder(networkValue);
-#endif // 1
+#endif // 测试本地字节序到网络字节序的转换
 
-#if 1 // 测试不同大小和不同格式的数据转换的可逆性
+#if 0 // 测试不同大小和不同格式的数据转换的可逆性
 	int intValue = 0x12345678;
 	short shortValue = 0x1234;
 	qint64 longValue = 0x123456789ABCDEF0LL;
@@ -130,7 +131,18 @@ int main(int argc, char* argv[])
 	BytesOrderBase::testConversion<long>(longValue, DataFormat::DCBA);
 	BytesOrderBase::testConversion<long>(longValue, DataFormat::BADC);
 	BytesOrderBase::testConversion<long>(longValue, DataFormat::CDAB);
-#endif
+#endif // 测试不同大小和不同格式的数据转换的可逆性
+
+#if 1 // Modbus-TCP测试
+	auto modbus = new ModbusTcpNet("127.0.0.1", 502, true, true);
+	// 读取float
+	auto floatValue = modbus->ReadFloat("40001");
+	qDebug() << floatValue.getContent0(); // 3.14  
+	auto intValue = modbus->ReadInt32("30001");
+	qDebug() << intValue.getContent0();
+
+#endif // Modbus-TCP测试
+
 
 	system("pause");
 }
