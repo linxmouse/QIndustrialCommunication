@@ -219,7 +219,7 @@ public:
 	}
 	virtual QVector<float> ConvertToFloat(const QByteArray& buffer, int index, int length)
 	{
-		QVector<float> array(length);
+		QVector<float> array;
 		for (int i = 0; i < length; ++i)
 		{
 			array.append(ConvertToFloat(buffer, index + 4 * i));

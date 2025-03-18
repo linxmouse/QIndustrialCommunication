@@ -80,7 +80,13 @@ protected:
 		return result;
 	}
 
+	/// @brief Socket建立连接时调用
+	/// @param socket 已连接的Socket实例
+	/// @return IsSuccess=false连接将关闭
 	virtual QICResult<> InitializationOnConnect(QTcpSocket *socket) = 0;
+	/// @brief Socket将要关闭是调用
+	/// @param socket 将要关闭的Socket实例
+	/// @return 
 	virtual QICResult<> ReleaseOnDisconnect(QTcpSocket *socket) = 0;
 
 	QICResult<QTcpSocket *> CreateSocketAndInitialication()
