@@ -74,7 +74,7 @@ public:
 	{
 		QByteArray fmtBuffer = ByteTransDataFormat2(buffer, index);
 		qint16 value = 0;
-		std::memcpy(&value, fmtBuffer.constData() + index, sizeof(value));
+		std::memcpy(&value, fmtBuffer.constData(), sizeof(value));
 		return value;
 	}
 	virtual QVector<qint16> ConvertToInt16(const QByteArray& buffer, int index, int length)
@@ -98,7 +98,7 @@ public:
 	{
 		QByteArray fmtBuffer = ByteTransDataFormat2(buffer, index);
 		ushort value = 0;
-		std::memcpy(&value, fmtBuffer.constData() + index, sizeof(value));
+		std::memcpy(&value, fmtBuffer.constData(), sizeof(value));
 		return value;
 	}
 	virtual QVector<ushort> ConvertToUInt16(const QByteArray& buffer, int index, int lenght)
