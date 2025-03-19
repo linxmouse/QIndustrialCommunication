@@ -6,7 +6,6 @@
 class ModbusTcpNet : public EthernetDevice
 {
 	Q_OBJECT
-	Q_PROPERTY(bool m_addressStartWithZero READ getAddressStartWithZero WRITE setAddressStartWithZero)
 	Q_PROPERTY(quint8 m_unitId READ getUnitId WRITE setUnitId)
 public:
 	ModbusTcpNet(QString ipAddr, int port, bool isPersistentConn, bool enableSendRecvLog, int connectTimeOut = 3000, int receiveTimeOut = 3000, QObject* parent = nullptr);
@@ -20,10 +19,10 @@ public:
 	// 重写核心读写方法
 	QICResult<QByteArray> Read(const QString& address, ushort length) override;
 	QICResult<> Write(const QString& address, const QByteArray& value) override;
+	using IEthernetIO::ReadBool;
+	QICResult<QVector<bool>> ReadBool(const QString& address, ushort length) override;
 
 #pragma region Properties
-	bool getAddressStartWithZero() const { return m_addressStartWithZero; }
-	void setAddressStartWithZero(bool value) { m_addressStartWithZero = value; }
 	quint8 getUnitId() const { return m_unitId; }
 	void setUnitId(quint8 value) { m_unitId = value; }
 #pragma endregion
@@ -45,15 +44,12 @@ protected:
 	QICResult<QByteArray> BuildWriteRequest(const QString& address, const QByteArray& value);
 	
 private:
-	bool m_addressStartWithZero = true;
 	// 事务标识符
 	quint16 m_transactionId = 0;
 	// 协议标识符
 	const quint16 m_protocolId = 0x0000;
 	// 默认设备标识符
 	quint8 m_unitId = 0x01;
-	// 地址解析
-	QICResult<ModbusAddress> ParseAddress(const QString& address);
 
 	/// @brief 生成Modbus应用协议头(MBAP)
 	/// Transaction ID(2) | Protocol ID(2) | Length(2) | Unit Identifier(1) | Function Code(1) | Data(variable)
@@ -70,13 +66,14 @@ private:
 	/// @return MBAP数据
 	QByteArray BuildMBAPHeader(quint16 pduLength)
 	{
-		QByteArray header(6, 0);
-		qToBigEndian(m_transactionId++, header.data());
-		// 协议标识符
-		qToBigEndian<quint16>(0x0000, header.data() + 2); 
-		// 长度字段
-		qToBigEndian<quint16>(pduLength + 1, header.data() + 4); 
-		header.append(m_unitId);
+		QByteArray header;
+		QDataStream stream(&header, QIODevice::WriteOnly);
+		stream.setByteOrder(QDataStream::BigEndian);
+		stream << m_transactionId++
+			<< m_protocolId
+			// pdu的长度+UnitId(1)
+			<< static_cast<quint16>(pduLength + 1)
+			<< m_unitId;
 		return header;
 	}
 };

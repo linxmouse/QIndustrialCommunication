@@ -135,11 +135,22 @@ int main(int argc, char* argv[])
 
 #if 1 // Modbus-TCP²âÊÔ
 	auto modbus = new ModbusTcpNet("127.0.0.1", 502, true, true);
+	modbus->BytesOrderPtr.reset(new BytesOrderBase(DataFormat::CDAB));
 	// ¶ÁÈ¡float
-	auto floatValue = modbus->ReadFloat("40001");
-	qDebug() << floatValue.getContent0(); // 3.14  
-	auto intValue = modbus->ReadInt32("30001");
+	auto floatValue = modbus->ReadFloat("40000");
+	qDebug() << floatValue.getContent0();
+	// ¶ÁÈ¡int
+	auto intValue = modbus->ReadInt32("40004");
 	qDebug() << intValue.getContent0();
+	// ¶ÁÈ¡short
+	auto shortValue = modbus->ReadInt16("40006");
+	qDebug() << shortValue.getContent0();
+	// ¶ÁÈ¡short array
+	auto shortsValue = modbus->ReadInt16("40006", 2);
+	qDebug() << "0 of shorts:" << shortsValue.getContent0().at(0) << "1 of shorts" << shortsValue.getContent0().at(1);
+	// ¶ÁÈ¡bool
+	auto boolValue = modbus->ReadBool("40006");
+	qDebug() << boolValue.getContent0();
 
 #endif // Modbus-TCP²âÊÔ
 

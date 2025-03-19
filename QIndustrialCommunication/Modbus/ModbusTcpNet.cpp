@@ -1,5 +1,4 @@
 #include "ModbusTcpNet.h"
-#include <QRegExp>
 
 ModbusTcpNet::ModbusTcpNet(QString ipAddr, int port, bool isPersistentConn, bool enableSendRecvLog, int connectTimeOut, int receiveTimeOut, QObject* parent)
 	: EthernetDevice(ipAddr, port, isPersistentConn, enableSendRecvLog, connectTimeOut, receiveTimeOut, parent)
@@ -66,18 +65,23 @@ QICResult<> ModbusTcpNet::Write(const QString& address, const QByteArray& value)
 	return QICResult<>::CreateSuccessResult();
 }
 
+QICResult<QVector<bool>> ModbusTcpNet::ReadBool(const QString& address, ushort length)
+{
+	return QICResult<QVector<bool>>();
+}
+
 QICResult<QByteArray> ModbusTcpNet::BuildReadRequest(const QString& address, ushort length)
 {
 	// 地址解析
-	auto addr = ParseAddress(address);
+	auto addr = ModbusAddress::ParseAddress(address, 0x03, m_unitId);
 	if (!addr.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(addr);
 	// 构建PDU:功能码(1)+地址(2)+长度(2)
 	QByteArray pdu;
 	QDataStream stream(&pdu, QIODevice::WriteOnly);
 	stream.setByteOrder(QDataStream::BigEndian);
 	stream << static_cast<quint8>(addr.getContent0().functionCode)
-		<< addr.getContent0().address
-		<< length;
+		   << addr.getContent0().address
+		   << length;
 	// 构建完整报文
 	QByteArray header = BuildMBAPHeader(pdu.size());
 	return QICResult<QByteArray>::CreateSuccessResult(header + pdu);
@@ -90,55 +94,13 @@ QICResult<QByteArray> ModbusTcpNet::ParseReadResponse(const QByteArray& response
 	// 校验功能码
 	quint8 functionCode = static_cast<quint8>(response[7]);
 	if (functionCode & 0x80) return QICResult<QByteArray>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(response[8], 2, 16, QChar('0')));
-	// 提取有效载荷
-	quint8 byteCount = static_cast<quint8>(response[8]);
-	auto responseData = response.mid(9, byteCount);
+	// 提取有效载荷: FunctionCode(1) | DataLength(1) | Data (variable)
+	quint8 dataLenth = static_cast<quint8>(response[8]);
+	auto responseData = response.mid(9, dataLenth);
 	return QICResult<QByteArray>::CreateSuccessResult(responseData);
 }
 
 QICResult<QByteArray> ModbusTcpNet::BuildWriteRequest(const QString& address, const QByteArray& value)
 {
-	// 地址解析
-	auto addrInfo = ParseAddress(address);
-	if (!addrInfo.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(addrInfo);
-	// 构建PDU
-	QByteArray pdu;
-	// 功能码: 写多寄存器
-	pdu.append(0x10);
-	qToBigEndian(addrInfo.getContent0().address, pdu.data() + 1);
-	quint16 regCount = value.size() / WordLenght;
-	qToBigEndian(regCount, pdu.data() + 3);
-	// 字节数
-	pdu.append(static_cast<char>(regCount * WordLenght));
+	return QICResult<QByteArray>::CreateFailedResult("Not Implement");
 }
-
-QICResult<ModbusAddress> ModbusTcpNet::ParseAddress(const QString& address)
-{
-	try
-	{
-		// 首位必须是0-4，且只占1个字符
-		QRegExp reg("^([0-4])(\\d+)(?:@(\\d+))?$");
-		if (!reg.exactMatch(address)) return QICResult<ModbusAddress>::CreateFailedResult("Invalid address format");
-		// 解析地址
-		QString typeStr = reg.cap(1);
-		quint16 addr = address.toUShort();
-		quint8 station = reg.cap(3).isEmpty() ? m_unitId : reg.cap(3).toUShort();
-		// 确定功能码
-		QMap<QString, quint8> typeMap = {
-			{"0", 0x01},// 线圈
-			{"1", 0x02},// 离散输入
-			{"3", 0x04},// 输入寄存器
-			{"4", 0x03},// 保持寄存器
-		};
-		if (!typeMap.contains(typeStr)) return QICResult<ModbusAddress>::CreateFailedResult("Unspported address type");
-		// 地址偏移处理
-		if (!m_addressStartWithZero && addr < 1) return QICResult<ModbusAddress>::CreateFailedResult("Address must be greater than 0");
-		addr = m_addressStartWithZero ? addr : (addr - 1);
-		return QICResult<ModbusAddress>::CreateSuccessResult({ addr, typeMap[typeStr], station });
-	}
-	catch (...)
-	{
-		return QICResult<ModbusAddress>::CreateFailedResult("Invalid address format");
-	}
-}
-

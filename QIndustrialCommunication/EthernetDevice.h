@@ -51,13 +51,11 @@ protected:
 		if (!result.IsSuccess)
 		{
 			IsSocketError = true;
-			if (enableSendRecvLog)
-				qDebug() << QString("NetEngine Start Faild: %1").arg(result.Message);
+			if (enableSendRecvLog) qDebug() << QString("NetEngine Start Faild: %1").arg(result.Message);
 			return QICResult<>::CreateFailedResult(result);
 		}
 		CoreSocket = result.getContent0();
-		if (enableSendRecvLog)
-			qDebug() << "NetEngine Started";
+		if (enableSendRecvLog) qDebug() << "NetEngine Started";
 		return QICResult<>::CreateSuccessResult();
 	}
 
@@ -74,8 +72,7 @@ protected:
 			CoreSocket = nullptr;
 		}
 		InteractiveMutex.unlock();
-		if (enableSendRecvLog)
-			qDebug() << "NetEngine Closed";
+		if (enableSendRecvLog) qDebug() << "NetEngine Closed";
 
 		return result;
 	}
