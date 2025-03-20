@@ -19,7 +19,7 @@ class KeyenceNanoSerialOverTcp : public EthernetDevice
 	Q_OBJECT
 
 public:
-	KeyenceNanoSerialOverTcp(QString ipAddr, int port, bool isPersistentConn, bool enableSendRecvLog, int connectTimeOut = 3000, int receiveTimeOut = 3000, QObject *parent = nullptr);
+	KeyenceNanoSerialOverTcp(QString ipAddr, int port, bool isPersistentConn, bool enableSendRecvLog, int connectTimeOut = 3000, int receiveTimeOut = 3000, QObject* parent = nullptr);
 	~KeyenceNanoSerialOverTcp();
 
 public:
@@ -28,17 +28,17 @@ public:
 	// 让基类中名为 ReadBool 的所有函数在派生类中都是可见的，与派生类自己定义的 ReadBool 函数重载（Overload），而不是被隐藏（Hide）
 	using EthernetDevice::ReadBool;
 
-	QICResult<QByteArray> Read(const QString &address, ushort length) override;
+	QICResult<QByteArray> Read(const QString& address, ushort length) override;
 
-	QICResult<QVector<bool>> ReadBool(const QString &address, ushort length) override;
+	QICResult<QVector<bool>> ReadBool(const QString& address, ushort length) override;
 
-	QICResult<> Write(const QString &address, const QByteArray &value) override;
+	QICResult<> Write(const QString& address, const QByteArray& value) override;
 
-	QICResult<> Write(const QString &address, bool value) override;
+	QICResult<> Write(const QString& address, bool value) override;
 
-	QICResult<> Write(const QString &address, const QVector<bool>& values) override;
+	QICResult<> Write(const QString& address, const QVector<bool>& values) override;
 
-	friend QDebug operator<<(QDebug debug, const KeyenceNanoSerialOverTcp &kvNano)
+	friend QDebug operator<<(QDebug debug, const KeyenceNanoSerialOverTcp& kvNano)
 	{
 		// QDebugStateSaver保存了进入代码块时的QDebug状态，并在代码块结束时恢复了这个状态
 		QDebugStateSaver saver(debug);
@@ -47,7 +47,7 @@ public:
 	}
 
 protected:
-	QICResult<> InitializationOnConnect(QTcpSocket *socket) override
+	QICResult<> InitializationOnConnect(QTcpSocket* socket) override
 	{
 		if (!socket || !socket->isValid())
 			return QICResult<>::CreateFailedResult("socket is null/invalid.");
@@ -58,7 +58,7 @@ protected:
 		return QICResult<>::CreateSuccessResult();
 	}
 
-	QICResult<> ReleaseOnDisconnect(QTcpSocket *socket) override
+	QICResult<> ReleaseOnDisconnect(QTcpSocket* socket) override
 	{
 		if (!socket || !socket->isValid())
 			return QICResult<>::CreateFailedResult("socket is null/invalid.");
@@ -74,7 +74,7 @@ private:
 	/// @brief 校验回应包的协议格式
 	/// @param ack
 	/// @return
-	QICResult<> CheckPlcReadResponse(const QByteArray &ack)
+	QICResult<> ParseReadResponse(const QByteArray& ack)
 	{
 		if (ack.isEmpty())
 			return QICResult<>::CreateFailedResult(QString::fromLocal8Bit("接收的数据长度为0"));
@@ -91,7 +91,7 @@ private:
 	/// @brief 校验回应包的协议格式
 	/// @param ack
 	/// @return
-	QICResult<> CheckPlcWriteResponse(const QByteArray &ack)
+	QICResult<> ParseWriteResponse(const QByteArray& ack)
 	{
 		if (ack.isEmpty())
 			return QICResult<>::CreateFailedResult(QString::fromLocal8Bit("接收的数据长度为0"));
@@ -106,21 +106,21 @@ private:
 	/// @param address 字符串地址
 	/// @param length 读取的长度
 	/// @return 读取数据包
-	QICResult<QByteArray> GenReadBytes(const QString &address, ushort length)
+	QICResult<QByteArray> BuildReadRequest(const QString& address, ushort length)
 	{
 		QICResult<QString, int> result = ParseAddress(address);
 		if (!result.IsSuccess)
 			return QICResult<QByteArray>::CreateFailedResult(result);
 		if ((result.getContent0() == "CTH" || result.getContent0() == "CTC" ||
-			 result.getContent0() == "C" || result.getContent0() == "T") &&
+			result.getContent0() == "C" || result.getContent0() == "T") &&
 			length > 1)
 		{
 			length = static_cast<ushort>(length / 2);
 		}
 		QString packet = QString("RDS %1%2 %3\r")
-							 .arg(result.getContent0())
-							 .arg(result.getContent1())
-							 .arg(length);
+			.arg(result.getContent0())
+			.arg(result.getContent1())
+			.arg(length);
 		QByteArray bytes = packet.toLatin1();
 		return QICResult<QByteArray>::CreateSuccessResult(bytes);
 	}
@@ -129,7 +129,7 @@ private:
 	/// @param address 字符串地址
 	/// @param value 写入的值
 	/// @return 写入数据包
-	QICResult<QByteArray> GenWriteBytes(const QString &address, const QByteArray &value)
+	QICResult<QByteArray> BuildWriteRequest(const QString& address, const QByteArray& value)
 	{
 		QICResult<QString, int> result = ParseAddress(address);
 		if (!result.IsSuccess)
@@ -156,8 +156,8 @@ private:
 			}
 		}
 		else if (result.getContent0() == "T" ||
-				 result.getContent0() == "C" ||
-				 result.getContent0() == "CTH")
+			result.getContent0() == "C" ||
+			result.getContent0() == "CTH")
 		{
 			int num = value.size() / 4;
 			stream << num << " ";
@@ -178,17 +178,14 @@ private:
 	/// @param address 字符串地址
 	/// @param value 写入的值
 	/// @return 写入数据包
-	QICResult<QByteArray> GenWriteBytes(const QString &address, bool value)
+	QICResult<QByteArray> BuildWriteRequest(const QString& address, bool value)
 	{
 		QICResult<QString, int> result = ParseAddress(address);
-		if (!result.IsSuccess)
-			return QICResult<QByteArray>::CreateFailedResult(result);
+		if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
 		QString packet;
 		QTextStream stream(&packet);
-		if (value)
-			stream << "ST ";
-		else
-			stream << "RS ";
+		if (value) stream << "ST ";
+		else stream << "RS ";
 		stream << result.getContent0() << result.getContent1() << "\r";
 		return QICResult<QByteArray>::CreateSuccessResult(packet.toLatin1());
 	}
@@ -197,19 +194,18 @@ private:
 	/// @param address 字符串地址
 	/// @param value 写入的值
 	/// @return 写入数据包
-	QICResult<QByteArray> GenWriteBytes(const QString &address, QVector<bool> values)
+	QICResult<QByteArray> BuildWriteRequest(const QString& address, QVector<bool> values)
 	{
 		QICResult<QString, int> result = ParseAddress(address);
-		if (!result.IsSuccess)
-			return QICResult<QByteArray>::CreateFailedResult(result);
+		if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
 		QString packet;
 		QTextStream stream(&packet);
 		stream << "WRS "
-			   << result.getContent0()
-			   << result.getContent1()
-			   << " "
-			   << values.length();
-		for (auto &value : values)
+			<< result.getContent0()
+			<< result.getContent1()
+			<< " "
+			<< values.length();
+		for (auto& value : values)
 		{
 			auto tf = value ? "1" : "0";
 			stream << " " << tf;
@@ -222,7 +218,7 @@ private:
 	/// @param addressType 地址类型
 	/// @param response QTcpSocket读取的完整报文
 	/// @return 携带纯数据部分的QICResult<QByteArray>
-	QICResult<QByteArray> ParsedData(const QString &addressType, const QByteArray &response)
+	QICResult<QByteArray> ParsedData(const QString& addressType, const QByteArray& response)
 	{
 		try
 		{
@@ -273,7 +269,7 @@ private:
 
 			return QICResult<QByteArray>::CreateFailedResult("输入的类型不支持，请重新输入");
 		}
-		catch (const QException &ex)
+		catch (const QException& ex)
 		{
 			return QICResult<QByteArray>::CreateFailedResult("Extract Msg: " + QString(ex.what()) + "\nData: " + response.toHex(' '));
 		}
@@ -283,7 +279,7 @@ private:
 	/// @param addressType 地址类型
 	/// @param response QTcpSocket读取的完整报文
 	/// @return 携带纯数据部分的QICResult<QVector<bool>>
-	QICResult<QVector<bool>> ParsedBoolData(const QString &addressType, const QByteArray &response)
+	QICResult<QVector<bool>> ParsedBoolData(const QString& addressType, const QByteArray& response)
 	{
 		try
 		{
@@ -300,7 +296,7 @@ private:
 			{
 				QStringList strList = str.split(' ', Qt::SkipEmptyParts);
 				QVector<bool> boolArray;
-				for (const auto &item : strList)
+				for (const auto& item : strList)
 				{
 					boolArray.push_back(item == "1");
 				}
@@ -318,7 +314,7 @@ private:
 			{
 				QStringList strList = str.split(' ', Qt::SkipEmptyParts);
 				QVector<bool> boolArray;
-				for (const auto &item : strList)
+				for (const auto& item : strList)
 				{
 					boolArray.push_back(item.startsWith("1"));
 				}
@@ -327,7 +323,7 @@ private:
 
 			return QICResult<QVector<bool>>::CreateFailedResult("输入的类型不支持，请重新输入");
 		}
-		catch (const std::exception &ex)
+		catch (const std::exception& ex)
 		{
 			return QICResult<QVector<bool>>::CreateFailedResult("Extract Msg: " + QString(ex.what()) + "\nData: " + response.toHex(' '));
 		}
@@ -373,7 +369,7 @@ private:
 
 			throw QException();
 		}
-		catch (const QException &ex)
+		catch (const QException& ex)
 		{
 			return QICResult<QString, int>::CreateFailedResult(ex.what());
 		}

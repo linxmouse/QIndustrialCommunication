@@ -27,6 +27,7 @@ public:
 	 */
 	explicit BytesOrderBase(DataFormat dataFormat, bool isStringReverseByteWord = false)
 		: dataFormat(dataFormat), isStringReverseByteWord(isStringReverseByteWord) { }
+	~BytesOrderBase() {}
 
 public:
 	/**
@@ -265,8 +266,11 @@ public:
 		QByteArray subArray = buffer.mid(index, length);
 		if (isStringReverseByteWord)
 		{
-			subArray = bytesReverseByWord(subArray);
+			subArray = ReverseWordBytes(subArray);
 		}
+		// 查找第一个 '\0' 并截断
+		int nullPos = subArray.indexOf('\0');
+		if (nullPos != -1) subArray = subArray.left(nullPos);
 		return codec->toUnicode(subArray);
 	}
 	/**
@@ -448,13 +452,13 @@ public:
 	{
 		if (value.isNull()) throw std::out_of_range("the data to be written cannot be null.");
 		QByteArray bytes = codec->fromUnicode(value);
-		return isStringReverseByteWord ? bytesReverseByWord(bytes) : bytes;
+		return isStringReverseByteWord ? ReverseWordBytes(bytes) : bytes;
 	}
 	virtual QByteArray PackByteArray(const QString& value, int length, QTextCodec* codec)
 	{
 		if (value.isNull()) throw std::out_of_range("the data to be written cannot be null.");
 		QByteArray bytes = codec->fromUnicode(value);
-		if (isStringReverseByteWord) bytes = bytesReverseByWord(bytes);
+		if (isStringReverseByteWord) bytes = ReverseWordBytes(bytes);
 		bytes.resize(length);
 		return bytes;
 	}
@@ -648,7 +652,7 @@ private:
 	 * @param value The input QByteArray to be processed.
 	 * @return QByteArray The resulting QByteArray after swapping byte pairs.
 	 */
-	QByteArray bytesReverseByWord(const QByteArray& value)
+	QByteArray ReverseWordBytes(const QByteArray& value)
 	{
 		if (value.isEmpty()) return QByteArray();
 		QByteArray array = value;

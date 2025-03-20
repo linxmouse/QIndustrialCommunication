@@ -292,7 +292,7 @@ public:
 		return QICResultTranslator::GetResultFromBytes<QString>(result, lambda);
 #endif // 1
 	}
-	QICResult<QString> ReadString(const QString &address, ushort length) { return ReadString(address, length, QTextCodec::codecForName("ASCII")); }
+	QICResult<QString> ReadString(const QString &address, ushort length) { return ReadString(address, length, QTextCodec::codecForLocale()); }
 
 	virtual QICResult<> Write(const QString &address, QVector<short> value)
 	{
@@ -356,12 +356,11 @@ public:
 		if (WordLenght == 1)
 		{
 			// 扩展到偶数长度
-			if (bytes.size() % 2 != 0)
-				bytes.append('\0');
+			if (bytes.size() % 2 != 0) bytes.append('\0');
 		}
 		return Write(address, bytes);
 	}
-	QICResult<> WriteString(const QString &address, QString value) { return WriteString(address, value, QTextCodec::codecForName("ASCII")); }
+	QICResult<> WriteString(const QString &address, QString value) { return WriteString(address, value, QTextCodec::codecForLocale()); }
 	virtual QICResult<> WriteString(const QString &address, QString value, int length, QTextCodec *codec)
 	{
 		auto bytes = BytesOrderPtr->PackByteArray(value, codec);
@@ -374,7 +373,7 @@ public:
 		bytes.resize(length);
 		return Write(address, bytes);
 	}
-	QICResult<> WriteString(const QString &address, QString value, int length) { return WriteString(address, value, length, QTextCodec::codecForName("ASCII")); }
+	QICResult<> WriteString(const QString &address, QString value, int length) { return WriteString(address, value, length, QTextCodec::codecForLocale()); }
 
 public:
 	ushort WordLenght;

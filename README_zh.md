@@ -11,7 +11,7 @@
 - **支持的协议**:
   - 基恩士 Nano 串行 TCP 通信
   - 西门子 S7（S1200 及其他型号）
-  - Modbus TCP（计划中）
+  - Modbus TCP
 
 - **核心能力**:
   - 支持多种数据类型的读写操作
@@ -77,9 +77,51 @@ qDebug() << "读取的 Int32 值: " << rInt.getContent0();
 auto isWriteSucc = s7Net.Write("db3400.5.1", true);
 ```
 
+### Modbus-TCP
+
+```cpp
+QScopedPointer<ModbusTcpNet> modbusTcp(new ModbusTcpNet("127.0.0.1", 502, true, true));
+modbusTcp->setDataFormat(DataFormat::ABCD);
+// 读取float
+auto floatValue = modbusTcp->ReadFloat("40000");
+qDebug() << floatValue.getContent0();
+// 读取int
+auto intValue = modbusTcp->ReadInt32("40004");
+qDebug() << intValue.getContent0();
+// 读取short
+auto shortValue = modbusTcp->ReadInt16("40006");
+qDebug() << shortValue.getContent0();
+// 读取short array
+auto shortsValue = modbusTcp->ReadInt16("40006", 2);
+qDebug() << "0 of shorts:" << shortsValue.getContent0().at(0) << "1 of shorts" << shortsValue.getContent0().at(1);
+// 读取bool
+auto boolsValue = modbusTcp->ReadBool("30000", 12);
+qDebug() << boolsValue.getContent0();
+
+// 写ushort
+auto rt = modbusTcp->Write("40000", (ushort)12345);
+qDebug() << rt.IsSuccess;
+// 写ushort array
+QVector<ushort> ushortValues{ 123, 456 };
+auto rt = modbusTcp->Write("40000", ushortValues);
+// 写int array
+QVector<int> intValues{ -123, 456 };
+auto rt = modbusTcp->Write("40000", intValues);
+// 写bool
+auto rt = modbusTcp->Write("40000", true);
+// 写bool array
+QVector<bool> boolValues{ true, false };
+auto rt = modbusTcp->Write("40000", boolValues);
+
+// 写字符串
+auto rt = modbusTcp->WriteString("30000", QString::fromLocal8Bit("你好，世界，Modbus-TCP字符串测试!"));
+// 读取字符串
+auto strValue = modbusTcp->ReadString("30000", 20);
+qDebug() << strValue.getContent0();
+```
+
 ## 计划开发功能
 
-- [ ] Modbus TCP 支持
 - [ ] 更多 PLC 协议实现
 - [ ] 增强日志和诊断功能
 - [ ] 性能优化

@@ -11,7 +11,7 @@ This Qt-based industrial communication library provides a robust and easy-to-use
 - **Supported Protocols**:
   - Keyence Nano Serial over TCP
   - Siemens S7 (S1200 and other variants)
-  - Modbus TCP (Planned)
+  - Modbus TCP
 
 - **Key Capabilities**:
   - Read/write operations for various data types
@@ -77,9 +77,51 @@ qDebug() << "Read Int32 value: " << rInt.getContent0();
 auto isWriteSucc = s7Net.Write("db3400.5.1", true);
 ```
 
+### Modbus-TCP
+
+```cpp
+QScopedPointer<ModbusTcpNet> modbusTcp(new ModbusTcpNet("127.0.0.1", 502, true, true));
+modbusTcp->setDataFormat(DataFormat::ABCD);
+// 读取float
+auto floatValue = modbusTcp->ReadFloat("40000");
+qDebug() << floatValue.getContent0();
+// 读取int
+auto intValue = modbusTcp->ReadInt32("40004");
+qDebug() << intValue.getContent0();
+// 读取short
+auto shortValue = modbusTcp->ReadInt16("40006");
+qDebug() << shortValue.getContent0();
+// 读取short array
+auto shortsValue = modbusTcp->ReadInt16("40006", 2);
+qDebug() << "0 of shorts:" << shortsValue.getContent0().at(0) << "1 of shorts" << shortsValue.getContent0().at(1);
+// 读取bool
+auto boolsValue = modbusTcp->ReadBool("30000", 12);
+qDebug() << boolsValue.getContent0();
+
+// 写ushort
+auto rt = modbusTcp->Write("40000", (ushort)12345);
+qDebug() << rt.IsSuccess;
+// 写ushort array
+QVector<ushort> ushortValues{ 123, 456 };
+auto rt = modbusTcp->Write("40000", ushortValues);
+// 写int array
+QVector<int> intValues{ -123, 456 };
+auto rt = modbusTcp->Write("40000", intValues);
+// 写bool
+auto rt = modbusTcp->Write("40000", true);
+// 写bool array
+QVector<bool> boolValues{ true, false };
+auto rt = modbusTcp->Write("40000", boolValues);
+
+// 写字符串
+auto rt = modbusTcp->WriteString("30000", QString::fromLocal8Bit("你好，世界，Modbus-TCP字符串测试!"));
+// 读取字符串
+auto strValue = modbusTcp->ReadString("30000", 20);
+qDebug() << strValue.getContent0();
+```
+
 ## Planned Features
 
-- [ ] Modbus TCP support
 - [ ] Additional PLC protocol implementations
 - [ ] Enhanced logging and diagnostics
 - [ ] Performance optimizations

@@ -102,27 +102,27 @@ public:
 	 * @param addresses 需要读取的S7地址列表
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> GenReadBytes(const QVector<S7Address>& addresses);
+	static QICResult<QByteArray> BuildReadRequest(const QVector<S7Address>& addresses);
 	/**
 	 * @brief 构建用于读取比特的请求数据包
 	 * @param address 要读取的S7地址
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> GenBitReadBytes(const QString& address);
+	static QICResult<QByteArray> BuildReadBitRequest(const QString& address);
 	/**
 	 * @brief 构建用于写入S7地址的请求数据包
 	 * @param address 要写入的S7地址
 	 * @param data 要写入的数据
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> GenWriteBytes(const S7Address& address, const QByteArray& data);
+	static QICResult<QByteArray> BuildWriteRequest(const S7Address& address, const QByteArray& data);
 	/**
 	 * @brief 构建用于写入比特的请求数据包
 	 * @param address 要写入的S7地址
 	 * @param data 要写入的bool值
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> GenBitWriteBytes(const QString& address, bool value);
+	static QICResult<QByteArray> BuildWriteBitRequest(const QString& address, bool value);
 
 private:
 	/**
@@ -143,19 +143,19 @@ private:
 	 * @param content 返回的字节数据
 	 * @return 包含解析结果的QICResult对象，成功则返回解析后的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> ParseReadBytes(const QVector<S7Address>& addresses, const QByteArray& content);
+	static QICResult<QByteArray> ParseReadResponse(const QVector<S7Address>& addresses, const QByteArray& content);
 	/**
 	 * @brief 解析从PLC返回的读取字节数据
 	 * @param address 要读取的S7地址
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> ParseReadBit(const QByteArray& content);
+	static QICResult<QByteArray> ParseReadBitResponse(const QByteArray& content);
 	/**
 	 * @brief 解析从PLC返回的数据，从而判断写入是否成功
 	 * @param content 从PLC返回的数据
 	 * @return 包含是否请求成功的QICResult对象，失败则返回失败原因
 	 */
-	static QICResult<> ParseWrite(const QByteArray& content);
+	static QICResult<> ParseWriteResponse(const QByteArray& content);
 	/**
 	 * @brief 将QVector<bool>转换为QByteArray
 	 * @param ba 布尔数组的值

@@ -199,17 +199,17 @@ QICResult<QByteArray> SiemensS7Net::Read(const QVector<S7Address>& addresses)
 
 QICResult<QByteArray> SiemensS7Net::ReadAddressBit(const QString& address)
 {
-	QICResult<QByteArray> result = GenBitReadBytes(address);
+	QICResult<QByteArray> result = BuildReadBitRequest(address);
 	if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
 	result = ReadFromCoreServer(result.getContent0());
 	if (!result.IsSuccess) return result;
-	return ParseReadBit(result.getContent0());
+	return ParseReadBitResponse(result.getContent0());
 }
 
 QICResult<QByteArray> SiemensS7Net::ReadAddressData(const QVector<S7Address>& addresses)
 {
 	// 构建读取数据包
-	QICResult<QByteArray> r = GenReadBytes(addresses);
+	QICResult<QByteArray> r = BuildReadRequest(addresses);
 	// 如果构建失败，返回失败结果
 	if (!r.IsSuccess) return r;
 	// 发送请求到核心服务器并读取返回数据
@@ -217,10 +217,10 @@ QICResult<QByteArray> SiemensS7Net::ReadAddressData(const QVector<S7Address>& ad
 	// 如果读取失败，返回失败结果
 	if (!r.IsSuccess) return r;
 	// 解析读取的字节数据
-	return ParseReadBytes(addresses, r.getContent0());
+	return ParseReadResponse(addresses, r.getContent0());
 }
 
-QICResult<QByteArray> SiemensS7Net::GenReadBytes(const QVector<S7Address>& addresses)
+QICResult<QByteArray> SiemensS7Net::BuildReadRequest(const QVector<S7Address>& addresses)
 {
 	// 如果地址列表为空，返回失败结果
 	if (addresses.isEmpty()) return QICResult<QByteArray>::CreateFailedResult("S7 Addresses is empty");
@@ -269,7 +269,7 @@ QICResult<QByteArray> SiemensS7Net::GenReadBytes(const QVector<S7Address>& addre
 	return QICResult<QByteArray>::CreateSuccessResult(bytes);
 }
 
-QICResult<QByteArray> SiemensS7Net::GenBitReadBytes(const QString& address)
+QICResult<QByteArray> SiemensS7Net::BuildReadBitRequest(const QString& address)
 {
 	// 解析地址字符串为S7Address对象
 	QICResult<S7Address> r = S7Address::ParseFrom(address);
@@ -314,7 +314,7 @@ QICResult<QByteArray> SiemensS7Net::GenBitReadBytes(const QString& address)
 	return QICResult<QByteArray>::CreateSuccessResult(bytes);
 }
 
-QICResult<QByteArray> SiemensS7Net::ParseReadBytes(const QVector<S7Address>& addresses, const QByteArray& content)
+QICResult<QByteArray> SiemensS7Net::ParseReadResponse(const QVector<S7Address>& addresses, const QByteArray& content)
 {
 	// 计算所有地址长度的总和
 	int totalLength = 0;
@@ -362,7 +362,7 @@ QICResult<QByteArray> SiemensS7Net::ParseReadBytes(const QVector<S7Address>& add
 	return QICResult<QByteArray>::CreateFailedResult("Data block length verification fails. Check whether put/get and db block optimization are enabled");
 }
 
-QICResult<QByteArray> SiemensS7Net::ParseReadBit(const QByteArray& content)
+QICResult<QByteArray> SiemensS7Net::ParseReadBitResponse(const QByteArray& content)
 {
 	// 初始化比特长度为1
 	int numBits = 1;
@@ -389,7 +389,7 @@ QICResult<> SiemensS7Net::WritePLC(const QByteArray& bytes)
 {
 	auto rcvRt = ReadFromCoreServer(bytes);
 	if (!rcvRt.IsSuccess) return QICResult<>::CreateFailedResult(rcvRt);
-	return ParseWrite(rcvRt.getContent0());
+	return ParseWriteResponse(rcvRt.getContent0());
 }
 
 QICResult<> SiemensS7Net::Write(const QString& address, const QByteArray& value)
@@ -404,7 +404,7 @@ QICResult<> SiemensS7Net::Write(const QString& address, const QByteArray& value)
 	{
 		ushort toWriteBytesNum = qMin(totalBytesNum - writedBytesNum, pduLength);
 		auto bytes = value.mid(writedBytesNum, toWriteBytesNum);
-		QICResult<QByteArray> packedBytesRt = GenWriteBytes(s7Address, bytes);
+		QICResult<QByteArray> packedBytesRt = BuildWriteRequest(s7Address, bytes);
 		if (!packedBytesRt.IsSuccess) return QICResult<>::CreateFailedResult(packedBytesRt);
 		QICResult<> isSuc = WritePLC(packedBytesRt.getContent0());
 		if (!isSuc.IsSuccess) return isSuc;
@@ -416,7 +416,7 @@ QICResult<> SiemensS7Net::Write(const QString& address, const QByteArray& value)
 
 QICResult<> SiemensS7Net::Write(const QString& address, bool value)
 {
-	QICResult<QByteArray> packedBytesRt = GenBitWriteBytes(address, value);
+	QICResult<QByteArray> packedBytesRt = BuildWriteBitRequest(address, value);
 	if (!packedBytesRt.IsSuccess) return QICResult<>::CreateFailedResult(packedBytesRt);
 	return WritePLC(packedBytesRt.getContent0());
 }
@@ -427,7 +427,7 @@ QICResult<> SiemensS7Net::Write(const QString& address, const QVector<bool>& val
 	return Write(address, bytes);
 }
 
-QICResult<QByteArray> SiemensS7Net::GenWriteBytes(const S7Address& address, const QByteArray& data)
+QICResult<QByteArray> SiemensS7Net::BuildWriteRequest(const S7Address& address, const QByteArray& data)
 {
 	QByteArray array(35 + data.size(), Qt::Uninitialized);
 	array[0]  = static_cast<char>(3);
@@ -469,7 +469,7 @@ QICResult<QByteArray> SiemensS7Net::GenWriteBytes(const S7Address& address, cons
 	return QICResult<QByteArray>::CreateSuccessResult(array);
 }
 
-QICResult<QByteArray> SiemensS7Net::GenBitWriteBytes(const QString& address, bool value)
+QICResult<QByteArray> SiemensS7Net::BuildWriteBitRequest(const QString& address, bool value)
 {
 	QICResult<S7Address> addressRt = S7Address::ParseFrom(address);
 	if (!addressRt.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(addressRt);
@@ -524,7 +524,7 @@ QICResult<QByteArray> SiemensS7Net::GenBitWriteBytes(const QString& address, boo
 	return QICResult<QByteArray>::CreateSuccessResult(array);
 }
 
-QICResult<> SiemensS7Net::ParseWrite(const QByteArray& content)
+QICResult<> SiemensS7Net::ParseWriteResponse(const QByteArray& content)
 {
 	quint8 ch = content.at(content.size() - 1);
 	if (ch != 0xFF)

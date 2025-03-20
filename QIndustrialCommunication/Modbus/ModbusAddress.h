@@ -7,7 +7,7 @@ class ModbusAddress
 {
 public:
 	ModbusAddress()
-		: address(0), functionCode(0x03), station(1)
+		: address(0), functionCode(READ_HOLDING_REGISTER), station(1)
 	{
 
 	}
@@ -22,7 +22,15 @@ public:
 			// 解析地址
 			quint16 addr = address.toUShort();
 			// 0x01 - 线圈 | 0x02 - 离散输入 | 0x04 - 输入寄存器 | 0x03 - 保持寄存器
-			QVector<quint8> functions = { 0x01, 0x02, 0x04, 0x03 };
+			QVector<quint8> functions = { 
+				READ_DISCRETE_INPUT,
+				READ_HOLDING_REGISTER, 
+				READ_INPUT_REGISTER, 
+				WRITE_SINGLE_COIL,
+				WRITE_SINGLE_REGISTER,
+				WRITE_MULTIPLE_COIL,
+				WRITE_MULTIPLE_REGISTER
+			};
 			if (!functions.contains(functionCode)) return QICResult<ModbusAddress>::CreateFailedResult("Unspported address type");
 			ModbusAddress modbusAddr;
 			modbusAddr.address = addr;
@@ -40,4 +48,19 @@ public:
 	quint16 address;
 	quint8 functionCode;
 	quint8 station;
+
+	// 读取离散量输入
+	static const quint8 READ_DISCRETE_INPUT = 0x01;
+	// 读取保持寄存器
+	static const quint8 READ_HOLDING_REGISTER = 0x03;
+	// 读取输入寄存器
+	static const quint8 READ_INPUT_REGISTER = 0x04;
+	// 写单个线圈
+	static const quint8 WRITE_SINGLE_COIL = 0x05;
+	// 写单个寄存器
+	static const quint8 WRITE_SINGLE_REGISTER = 0x06;
+	// 写多个线圈
+	static const quint8 WRITE_MULTIPLE_COIL = 0x0f;
+	// 写多个线圈
+	static const quint8 WRITE_MULTIPLE_REGISTER = 0x10;
 };

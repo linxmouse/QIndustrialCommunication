@@ -134,24 +134,44 @@ int main(int argc, char* argv[])
 #endif // 测试不同大小和不同格式的数据转换的可逆性
 
 #if 1 // Modbus-TCP测试
-	auto modbus = new ModbusTcpNet("127.0.0.1", 502, true, true);
-	modbus->BytesOrderPtr.reset(new BytesOrderBase(DataFormat::CDAB));
+	QScopedPointer<ModbusTcpNet> modbusTcp(new ModbusTcpNet("127.0.0.1", 502, true, true));
+	modbusTcp->setDataFormat(DataFormat::ABCD);
 	// 读取float
-	auto floatValue = modbus->ReadFloat("40000");
+	auto floatValue = modbusTcp->ReadFloat("40000");
 	qDebug() << floatValue.getContent0();
 	// 读取int
-	auto intValue = modbus->ReadInt32("40004");
+	auto intValue = modbusTcp->ReadInt32("40004");
 	qDebug() << intValue.getContent0();
 	// 读取short
-	auto shortValue = modbus->ReadInt16("40006");
+	auto shortValue = modbusTcp->ReadInt16("40006");
 	qDebug() << shortValue.getContent0();
 	// 读取short array
-	auto shortsValue = modbus->ReadInt16("40006", 2);
+	auto shortsValue = modbusTcp->ReadInt16("40006", 2);
 	qDebug() << "0 of shorts:" << shortsValue.getContent0().at(0) << "1 of shorts" << shortsValue.getContent0().at(1);
 	// 读取bool
-	auto boolValue = modbus->ReadBool("40006");
-	qDebug() << boolValue.getContent0();
+	auto boolsValue = modbusTcp->ReadBool("30000", 12);
+	qDebug() << boolsValue.getContent0();
 
+	// 写ushort
+	auto rt = modbusTcp->Write("40000", (ushort)12345);
+	qDebug() << rt.IsSuccess;
+	// 写ushort array
+	QVector<ushort> ushortValues{ 123, 456 };
+	auto rt = modbusTcp->Write("40000", ushortValues);
+	// 写int array
+	QVector<int> intValues{ -123, 456 };
+	auto rt = modbusTcp->Write("40000", intValues);
+	// 写bool
+	auto rt = modbusTcp->Write("40000", true);
+	// 写bool array
+	QVector<bool> boolValues{ true, false };
+	auto rt = modbusTcp->Write("40000", boolValues);
+
+	// 写字符串
+	auto rt = modbusTcp->WriteString("30000", QString::fromLocal8Bit("你好，世界，Modbus-TCP字符串测试!"));
+	// 读取字符串
+	auto strValue = modbusTcp->ReadString("30000", 20);
+	qDebug() << strValue.getContent0();
 #endif // Modbus-TCP测试
 
 
