@@ -121,7 +121,11 @@ QICResult<> SiemensS7Net::Stop()
 
 QICResult<bool> SiemensS7Net::ReadBool(const QString& address)
 {
-	auto result = ReadAddressBit(address);
+	QICResult<QByteArray> result = BuildReadBoolRequest(address);
+	if (!result.IsSuccess) return QICResult<bool>::CreateFailedResult(result);
+	result = ReadFromSocket(result.getContent0());
+	if (!result.IsSuccess) return QICResult<bool>::CreateFailedResult(result);
+	result = ParseReadBoolResponse(result.getContent0());
 	if (!result.IsSuccess) return QICResult<bool>::CreateFailedResult(result);
 	auto content = result.getContent0();
 	return QICResult<bool>::CreateSuccessResult(content.at(0) != 0);
@@ -194,20 +198,6 @@ QICResult<QByteArray> SiemensS7Net::Read(const QVector<S7Address>& addresses)
 		return QICResult<QByteArray>::CreateSuccessResult(result);
 	}
 	// 如果地址数量小于或等于19个，直接读取
-	return ReadAddressData(addresses);
-}
-
-QICResult<QByteArray> SiemensS7Net::ReadAddressBit(const QString& address)
-{
-	QICResult<QByteArray> result = BuildReadBitRequest(address);
-	if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
-	result = ReadFromSocket(result.getContent0());
-	if (!result.IsSuccess) return result;
-	return ParseReadBitResponse(result.getContent0());
-}
-
-QICResult<QByteArray> SiemensS7Net::ReadAddressData(const QVector<S7Address>& addresses)
-{
 	// 构建读取数据包
 	QICResult<QByteArray> r = BuildReadRequest(addresses);
 	// 如果构建失败，返回失败结果
@@ -269,7 +259,7 @@ QICResult<QByteArray> SiemensS7Net::BuildReadRequest(const QVector<S7Address>& a
 	return QICResult<QByteArray>::CreateSuccessResult(bytes);
 }
 
-QICResult<QByteArray> SiemensS7Net::BuildReadBitRequest(const QString& address)
+QICResult<QByteArray> SiemensS7Net::BuildReadBoolRequest(const QString& address)
 {
 	// 解析地址字符串为S7Address对象
 	QICResult<S7Address> r = S7Address::ParseFrom(address);
@@ -362,7 +352,7 @@ QICResult<QByteArray> SiemensS7Net::ParseReadResponse(const QVector<S7Address>& 
 	return QICResult<QByteArray>::CreateFailedResult("Data block length verification fails. Check whether put/get and db block optimization are enabled");
 }
 
-QICResult<QByteArray> SiemensS7Net::ParseReadBitResponse(const QByteArray& content)
+QICResult<QByteArray> SiemensS7Net::ParseReadBoolResponse(const QByteArray& content)
 {
 	// 初始化比特长度为1
 	int numBits = 1;
@@ -387,9 +377,9 @@ QICResult<QByteArray> SiemensS7Net::ParseReadBitResponse(const QByteArray& conte
 
 QICResult<> SiemensS7Net::WritePLC(const QByteArray& bytes)
 {
-	auto rcvRt = ReadFromSocket(bytes);
-	if (!rcvRt.IsSuccess) return QICResult<>::CreateFailedResult(rcvRt);
-	return ParseWriteResponse(rcvRt.getContent0());
+	auto rt = ReadFromSocket(bytes);
+	if (!rt.IsSuccess) return QICResult<>::CreateFailedResult(rt);
+	return ParseWriteResponse(rt.getContent0());
 }
 
 QICResult<> SiemensS7Net::Write(const QString& address, const QByteArray& value)

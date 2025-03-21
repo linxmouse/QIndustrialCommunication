@@ -12,6 +12,7 @@
   - 基恩士 Nano 串行 TCP 通信
   - 西门子 S7（S1200 及其他型号）
   - Modbus TCP
+  - Melsec MC ASCII (Planned)
 
 - **核心能力**:
   - 支持多种数据类型的读写操作
@@ -32,7 +33,7 @@
 
 ```bash
 git clone https://github.com/linxmouse/QIndustrialCommunication.git
-cd qt-industrial-communication
+cd QIndustrialCommunication
 ```
 
 ### 使用 CMake 构建

@@ -31,6 +31,13 @@ file(GLOB SIEMENS_HEADERS "Siemens/*.hpp" "Siemens/*.h")
 list(APPEND SRCS ${SIEMENS_SRCS})
 list(APPEND HEADERS ${SIEMENS_HEADERS})
 
+# 获取Melsec子目录下的源文件和头文件
+file(GLOB MELSEC_SRCS "Melsec/*.cpp" "Melsec/*.cxx" "Melsec/*.c")
+file(GLOB MELSEC_HEADERS "Melsec/*.hpp" "Melsec/*.h")
+# 将Melsec子目录下的文件添加到主列表中
+list(APPEND SRCS ${MELSEC_SRCS})
+list(APPEND HEADERS ${MELSEC_HEADERS})
+
 set(CMAKE_AUTOMOC ON)
 #set(CMAKE_AUTOUIC ON)
 #set(CMAKE_AUTORCC ON)

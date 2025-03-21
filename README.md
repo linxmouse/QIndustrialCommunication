@@ -12,6 +12,7 @@ This Qt-based industrial communication library provides a robust and easy-to-use
   - Keyence Nano Serial over TCP
   - Siemens S7 (S1200 and other variants)
   - Modbus TCP
+  - Melsec MC ASCII (Planned)
 
 - **Key Capabilities**:
   - Read/write operations for various data types
@@ -32,7 +33,7 @@ This Qt-based industrial communication library provides a robust and easy-to-use
 
 ```bash
 git clone https://github.com/linxmouse/QIndustrialCommunication.git
-cd qt-industrial-communication
+cd QIndustrialCommunication
 ```
 
 ### Build with CMake

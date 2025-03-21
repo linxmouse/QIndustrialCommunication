@@ -218,7 +218,7 @@ private:
 	/// @param addressType 地址类型
 	/// @param response QTcpSocket读取的完整报文
 	/// @return 携带纯数据部分的QICResult<QByteArray>
-	QICResult<QByteArray> ParsedData(const QString& addressType, const QByteArray& response)
+	QICResult<QByteArray> ParseReadResponse(const QString& addressType, const QByteArray& response)
 	{
 		try
 		{
@@ -279,7 +279,7 @@ private:
 	/// @param addressType 地址类型
 	/// @param response QTcpSocket读取的完整报文
 	/// @return 携带纯数据部分的QICResult<QVector<bool>>
-	QICResult<QVector<bool>> ParsedBoolData(const QString& addressType, const QByteArray& response)
+	QICResult<QVector<bool>> ParsedReadBoolResponse(const QString& addressType, const QByteArray& response)
 	{
 		try
 		{

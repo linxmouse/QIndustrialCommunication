@@ -28,7 +28,7 @@ QICResult<QByteArray> KeyenceNanoSerialOverTcp::Read(const QString &address, ush
 	QICResult<QString, int> analysisResult = ParseAddress(address);
 	if (!analysisResult.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(analysisResult);
 	// 解析数据
-	return ParsedData(analysisResult.getContent0(), readResult.getContent0());
+	return ParseReadResponse(analysisResult.getContent0(), readResult.getContent0());
 }
 
 QICResult<QVector<bool>> KeyenceNanoSerialOverTcp::ReadBool(const QString &address, ushort length)
@@ -46,7 +46,7 @@ QICResult<QVector<bool>> KeyenceNanoSerialOverTcp::ReadBool(const QString &addre
 	auto addressResult = ParseAddress(address);
 	if (!addressResult.IsSuccess) return QICResult<QVector<bool>>::CreateFailedResult(addressResult);
 	// 解析数据
-	return ParsedBoolData(addressResult.getContent0(), readResult.getContent0());
+	return ParsedReadBoolResponse(addressResult.getContent0(), readResult.getContent0());
 }
 
 QICResult<> KeyenceNanoSerialOverTcp::Write(const QString &address, const QByteArray &value)

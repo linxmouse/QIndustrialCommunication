@@ -108,7 +108,7 @@ public:
 	 * @param address 要读取的S7地址
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> BuildReadBitRequest(const QString& address);
+	static QICResult<QByteArray> BuildReadBoolRequest(const QString& address);
 	/**
 	 * @brief 构建用于写入S7地址的请求数据包
 	 * @param address 要写入的S7地址
@@ -126,18 +126,6 @@ public:
 
 private:
 	/**
-	 * @brief 读取S7地址的位数据
-	 * @param address 地址信息
-	 * @return 包含读取结果的QICResult对象，成功则返回读取到的字节数组，失败则返回失败原因
-	 */
-	QICResult<QByteArray> ReadAddressBit(const QString& address);
-	/**
-	 * @brief 读取多个S7地址的数据。
-	 * @param addresses 需要读取的S7地址列表。
-	 * @return 包含读取结果的QICResult对象，成功则返回读取到的字节数组，失败则返回失败原因
-	 */
-	QICResult<QByteArray> ReadAddressData(const QVector<S7Address>& addresses);
-	/**
 	 * @brief 解析从PLC返回的读取字节数据
 	 * @param addresses 读取的S7地址列表
 	 * @param content 返回的字节数据
@@ -149,7 +137,7 @@ private:
 	 * @param address 要读取的S7地址
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> ParseReadBitResponse(const QByteArray& content);
+	static QICResult<QByteArray> ParseReadBoolResponse(const QByteArray& content);
 	/**
 	 * @brief 解析从PLC返回的数据，从而判断写入是否成功
 	 * @param content 从PLC返回的数据
