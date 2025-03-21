@@ -423,7 +423,7 @@ QICResult<> SiemensS7Net::Write(const QString& address, bool value)
 
 QICResult<> SiemensS7Net::Write(const QString& address, const QVector<bool>& values)
 {
-	QByteArray bytes = BoolVectorToByteArray(values);
+	QByteArray bytes = BoolListToByteArray(values);
 	return Write(address, bytes);
 }
 

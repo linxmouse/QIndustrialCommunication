@@ -2,6 +2,14 @@
 file(GLOB SRCS "*.cpp" "*.c")
 file(GLOB HEADERS "*.hpp" "*.h")
 
+# 获取Core目录下的源文件和头文件
+file(GLOB SRCS "Core/*.cpp" "Core/*.c")
+file(GLOB HEADERS "Core/*.hpp" "Core/*.h")
+
+# 获取实验杂项目录下的源文件和头文件
+file(GLOB SRCS "Misc/*.cpp" "Misc/*.c")
+file(GLOB HEADERS "Misc/*.hpp" "Misc/*.h")
+
 # 获取Keyence子目录下的源文件和头文件
 file(GLOB KEYENCE_SRCS "Keyence/*.cpp" "Keyence/*.cxx" "Keyence/*.c")
 file(GLOB KEYENCE_HEADERS "Keyence/*.hpp" "Keyence/*.h")
@@ -37,6 +45,8 @@ endif()
 target_include_directories(QIC 
 	PUBLIC 
 	${CMAKE_CURRENT_SOURCE_DIR}
+	"${CMAKE_CURRENT_SOURCE_DIR}/Core"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Misc"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Keyence"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Modbus"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Siemens"

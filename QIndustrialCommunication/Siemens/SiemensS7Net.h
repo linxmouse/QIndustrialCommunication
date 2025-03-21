@@ -161,39 +161,36 @@ private:
 	 * @param ba 布尔数组的值
 	 * @return 转换后的结果
 	 */
-	QByteArray BoolVectorToByteArray(const QVector<bool>& values)
+	QByteArray BoolListToByteArray(const QVector<bool>& values)
 	{
 		if (values.isEmpty()) return QByteArray();
 		int size = qCeil(values.size() / 8.0);
-		QByteArray result(size, 0);
+		QByteArray bytes(size, 0);
 		for (int i = 0; i < values.size(); i++)
 		{
 			if (values.at(i))
 			{
 				// 获取当前的字节
-				quint8 currByte = static_cast<quint8>(result[i / 8]);
+				quint8 temp = static_cast<quint8>(bytes[i / 8]);
 				// 更新字节的位
-				currByte |= (1 << (i % 8));
+				temp |= (1 << (i % 8));
 				// 更新后的字节写回
-				result[i / 8] = static_cast<char>(currByte);
+				bytes[i / 8] = static_cast<char>(temp);
 			}
 		}
-		return result;
+		return bytes;
 	}
 	/**
 	 * @brief 将QByteArray转换回QVector<bool>
 	 * @param bytes 字节数据
+	 * @param length 结果数组的长度
 	 * @return 转换后的结果
 	 */
-	QVector<bool> ByteArrayToBoolVector(const QByteArray& bytes)
+	QVector<bool> ByteArrayToBoolVector(const QByteArray& bytes, ushort length)
 	{
 		if (bytes.isEmpty()) return QVector<bool>();
-		int length = bytes.size() * 8;
-		QVector<bool> result(length);
-		for (int i = 0; i < length; i++)
-		{
-			result.append((bytes[i / 8] & (1 << (i % 8))) != 0);
-		}
+		QVector<bool> result;
+		for (int i = 0; i < length; i++) result.append((bytes[i / 8] & (1 << (i % 8))) != 0);
 		return result;
 	}
 

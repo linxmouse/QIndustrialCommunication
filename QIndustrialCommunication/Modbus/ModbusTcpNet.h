@@ -9,6 +9,7 @@ class ModbusTcpNet : public EthernetDevice
 	Q_OBJECT
 	Q_PROPERTY(quint8 m_unitId READ getUnitId WRITE setUnitId)
 	//Q_PROPERTY(DataFormat _dataFormat READ getDataFormat WRITE setDataFormat)
+	Q_PROPERTY(bool m_isOneBaseAddress READ getIsOneBaseAddress WRITE setIsOneBaseAddress)
 public:
 	ModbusTcpNet(QString ipAddr, int port, bool isPersistentConn, bool enableSendRecvLog, int connectTimeOut = 3000, int receiveTimeOut = 3000, QObject* parent = nullptr);
 	~ModbusTcpNet();
@@ -33,6 +34,8 @@ public:
 	void setUnitId(quint8 value) { m_unitId = value; }
 	DataFormat getDataFormat() const { return BytesOrderPtr->dataFormat; }
 	void setDataFormat(DataFormat value) { BytesOrderPtr->dataFormat = value; }
+	bool getIsOneBaseAddress() const { return m_isOneBaseAddress; }
+	void setIsOneBaseAddress(bool value) { m_isOneBaseAddress = value; }
 #pragma endregion
 
 protected:
@@ -98,16 +101,13 @@ private:
 	}
 	/// @brief 将QByteArray转换回QVector<bool>
 	/// @param bytes 字节数据
+	/// @param length 结果数组的长度
 	/// @return 转换后的结果
-	QVector<bool> ByteArrayToBoolList(const QByteArray& bytes)
+	QVector<bool> ByteArrayToBoolList(const QByteArray& bytes, ushort length)
 	{
 		if (bytes.isEmpty()) return QVector<bool>();
-		int length = bytes.size() * 8;
-		QVector<bool> result(length);
-		for (int i = 0; i < length; i++)
-		{
-			result.append((bytes[i / 8] & (1 << (i % 8))) != 0);
-		}
+		QVector<bool> result;
+		for (int i = 0; i < length; i++) result.append((bytes[i / 8] & (1 << (i % 8))) != 0);
 		return result;
 	}
 	
@@ -118,6 +118,8 @@ private:
 	const quint16 m_protocolId = 0x0000;
 	// 默认设备标识符
 	quint8 m_unitId = 0x01;
+	// 地址从1开始
+	bool m_isOneBaseAddress = false;
 
 	/// @brief 生成Modbus应用协议头(MBAP)
 	/// TransactionID(2) | ProtocolID(2) | Length(2) | UnitIdentifier(1) | FunctionCode(1) | Data(variable)

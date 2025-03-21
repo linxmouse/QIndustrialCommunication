@@ -68,14 +68,14 @@ QICResult<QVector<bool>> ModbusTcpNet::ReadBool(const QString& address, ushort l
 	auto parsedData = ParseReadBoolResponse(response.getContent0());
 	if (!parsedData.IsSuccess) return QICResult<QVector<bool>>::CreateFailedResult(parsedData);
 	QByteArray bytes = parsedData.getContent0();
-	auto boolValues = ByteArrayToBoolList(bytes);
+	auto boolValues = ByteArrayToBoolList(bytes, length);
 	return QICResult<QVector<bool>>::CreateSuccessResult(boolValues);
 }
 
 QICResult<QByteArray> ModbusTcpNet::BuildReadRequest(const QString& address, ushort length)
 {
 	// 地址解析
-	auto addr = ModbusAddress::ParseAddress(address, ModbusAddress::READ_HOLDING_REGISTER, getUnitId());
+	auto addr = ModbusAddress::ParseAddress(address, ModbusAddress::READ_HOLDING_REGISTER, getUnitId(), getIsOneBaseAddress());
 	if (!addr.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(addr);
 	// 构建PDU:功能码(1)+地址(2)+字节长度(2)
 	QByteArray pdu;
@@ -105,7 +105,7 @@ QICResult<QByteArray> ModbusTcpNet::ParseReadResponse(const QByteArray& response
 QICResult<QByteArray> ModbusTcpNet::BuildReadBoolRequest(const QString& address, ushort length)
 {
 	// 地址解析
-	auto addr = ModbusAddress::ParseAddress(address, ModbusAddress::READ_DISCRETE_INPUT, getUnitId());
+	auto addr = ModbusAddress::ParseAddress(address, ModbusAddress::READ_DISCRETE_INPUT, getUnitId(), getIsOneBaseAddress());
 	if (!addr.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(addr);
 	// 构建PDU:功能码(1)+地址(2)+位长度(2)
 	QByteArray pdu;
@@ -136,7 +136,7 @@ QICResult<QByteArray> ModbusTcpNet::BuildWriteRequest(const QString& address, co
 {
 	// 根据数据长度确定功能码
 	quint8 functionCode = (value.size() == 2) ? ModbusAddress::WRITE_SINGLE_REGISTER : ModbusAddress::WRITE_MULTIPLE_REGISTER;
-	auto addr = ModbusAddress::ParseAddress(address, functionCode, getUnitId());
+	auto addr = ModbusAddress::ParseAddress(address, functionCode, getUnitId(), getIsOneBaseAddress());
 	if (!addr.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(addr);
 	// 构建PDU
 	// WRITE_SINGLE_REGISTER:功能码(1)+地址(2)+Data(variable)
@@ -173,7 +173,7 @@ QICResult<QByteArray> ModbusTcpNet::BuildWriteBoolRequest(const QString& address
 {
 	// 根据线圈数量自动判断功能码
 	quint8 functionCode = (values.size() == 1) ? ModbusAddress::WRITE_SINGLE_COIL : ModbusAddress::WRITE_MULTIPLE_COIL;
-	auto addr = ModbusAddress::ParseAddress(address, functionCode, getUnitId());
+	auto addr = ModbusAddress::ParseAddress(address, functionCode, getUnitId(), getIsOneBaseAddress());
 	if (!addr.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(addr);
 	// 构建PDU
 	// WRITE_SINGLE_COIL:功能码(1)+地址(2)+Data(2)

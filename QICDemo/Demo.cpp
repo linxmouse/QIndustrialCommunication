@@ -136,44 +136,47 @@ int main(int argc, char* argv[])
 #if 1 // Modbus-TCP²âÊÔ
 	QScopedPointer<ModbusTcpNet> modbusTcp(new ModbusTcpNet("127.0.0.1", 502, true, true));
 	modbusTcp->setDataFormat(DataFormat::ABCD);
-	// ¶ÁÈ¡float
-	auto floatValue = modbusTcp->ReadFloat("40000");
-	qDebug() << floatValue.getContent0();
-	// ¶ÁÈ¡int
-	auto intValue = modbusTcp->ReadInt32("40004");
-	qDebug() << intValue.getContent0();
-	// ¶ÁÈ¡short
-	auto shortValue = modbusTcp->ReadInt16("40006");
-	qDebug() << shortValue.getContent0();
-	// ¶ÁÈ¡short array
-	auto shortsValue = modbusTcp->ReadInt16("40006", 2);
-	qDebug() << "0 of shorts:" << shortsValue.getContent0().at(0) << "1 of shorts" << shortsValue.getContent0().at(1);
-	// ¶ÁÈ¡bool
-	auto boolsValue = modbusTcp->ReadBool("30000", 12);
-	qDebug() << boolsValue.getContent0();
-
+	modbusTcp->setIsOneBaseAddress(true);
 	// Ð´ushort
-	auto rt = modbusTcp->Write("40000", (ushort)12345);
-	qDebug() << rt.IsSuccess;
-	// Ð´ushort array
-	QVector<ushort> ushortValues{ 123, 456 };
-	auto rt = modbusTcp->Write("40000", ushortValues);
+	auto rt = modbusTcp->Write("00001", 1.2345f);
+	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
 	// Ð´int array
 	QVector<int> intValues{ -123, 456 };
-	auto rt = modbusTcp->Write("40000", intValues);
+	rt = modbusTcp->Write("40001", intValues);
+	// Ð´ushort array
+	QVector<ushort> ushortValues{ 123, 456 };
+	rt = modbusTcp->Write("40004", ushortValues);
+	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
 	// Ð´bool
-	auto rt = modbusTcp->Write("40000", true);
+	rt = modbusTcp->Write("30001", true);
+	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
 	// Ð´bool array
-	QVector<bool> boolValues{ true, false };
-	auto rt = modbusTcp->Write("40000", boolValues);
-
+	QVector<bool> boolValues{ true, false, true, false, true, false, true, false, true, false, true, false };
+	rt = modbusTcp->Write("41001", boolValues);
+	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
 	// Ð´×Ö·û´®
-	auto rt = modbusTcp->WriteString("30000", QString::fromLocal8Bit("ÄãºÃ£¬ÊÀ½ç£¬Modbus-TCP×Ö·û´®²âÊÔ!"));
-	// ¶ÁÈ¡×Ö·û´®
-	auto strValue = modbusTcp->ReadString("30000", 20);
-	qDebug() << strValue.getContent0();
-#endif // Modbus-TCP²âÊÔ
+	rt = modbusTcp->WriteString("30001", QString::fromLocal8Bit("ÄãºÃ£¬ÊÀ½ç£¬Modbus-TCP×Ö·û´®²âÊÔ!"));
+	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
 
+	// ¶ÁÈ¡float
+	auto floatValue = modbusTcp->ReadFloat("00001");
+	floatValue.IsSuccess ? qDebug() << floatValue.getContent0() : qDebug() << floatValue.Message;
+	// ¶ÁÈ¡int
+	auto intValue = modbusTcp->ReadInt32("40001");
+	intValue.IsSuccess ? qDebug() << intValue.getContent0() : qDebug() << intValue.Message;
+	// ¶ÁÈ¡short
+	auto shortValue = modbusTcp->ReadInt16("40004");
+	shortValue.IsSuccess ? qDebug() << shortValue.getContent0() : qDebug() << shortValue.Message;
+	// ¶ÁÈ¡short array
+	auto shortsValue = modbusTcp->ReadInt16("40004", 2);
+	shortsValue.IsSuccess ? qDebug() << shortsValue.getContent0() : qDebug() << shortsValue.Message;
+	// ¶ÁÈ¡bool array
+	auto boolsValue = modbusTcp->ReadBool("41001", 12);
+	boolsValue.IsSuccess ? qDebug() << boolsValue.getContent0() : qDebug() << boolsValue.Message;
+	// ¶ÁÈ¡×Ö·û´®
+	auto strValue = modbusTcp->ReadString("30001", 20);
+	strValue.IsSuccess ? qDebug() << strValue.getContent0() : qDebug() << strValue.Message;
+#endif // Modbus-TCP²âÊÔ
 
 	system("pause");
 }
