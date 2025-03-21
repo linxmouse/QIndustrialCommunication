@@ -4,7 +4,7 @@ ModbusTcpNet::ModbusTcpNet(QString ipAddr, int port, bool isPersistentConn, bool
 	: EthernetDevice(ipAddr, port, isPersistentConn, enableSendRecvLog, connectTimeOut, receiveTimeOut, parent)
 {
 	WordLenght = 1;
-	BytesOrderPtr.reset(new BytesOrderBase(DataFormat::DCBA, false));
+	BytesOrderPtr.reset(new BytesOrderBase(DataFormat::CDAB, false));
 }
 
 ModbusTcpNet::~ModbusTcpNet()
