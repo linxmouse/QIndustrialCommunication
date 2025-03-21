@@ -75,9 +75,9 @@ QICResult<> SiemensS7Net::checkStopResult(QByteArray content)
 
 QICResult<> SiemensS7Net::InitializationOnConnect(QTcpSocket* socket)
 {
-	QICResult<QByteArray> r = ReadFromCoreServer(socket, plcHead1);
+	QICResult<QByteArray> r = ReadFromSocket(socket, plcHead1);
 	if (!r.IsSuccess) return QICResult<>::CreateFailedResult(r);
-	r = ReadFromCoreServer(socket, plcHead2);
+	r = ReadFromSocket(socket, plcHead2);
 	if (!r.IsSuccess) return QICResult<>::CreateFailedResult(r);
 	QByteArray content = r.getContent0();
 	pduLength = this->BytesOrderPtr->ConvertToUInt16(content.mid(content.count() - 2), 0) - 20;
@@ -92,7 +92,7 @@ QICResult<> SiemensS7Net::ReleaseOnDisconnect(QTcpSocket* socket)
 
 QICResult<QString> SiemensS7Net::ReadOrderNumber()
 {
-	auto r = ReadFromCoreServer(plcOrderNumber);
+	auto r = ReadFromSocket(plcOrderNumber);
 	if (!r.IsSuccess) return QICResult<QString>::CreateFailedResult(r);
 	auto orderNumber = r.getContent0().mid(71, 20);
 	return QICResult<QString>::CreateSuccessResult(QString::fromLatin1(orderNumber));
@@ -100,21 +100,21 @@ QICResult<QString> SiemensS7Net::ReadOrderNumber()
 
 QICResult<> SiemensS7Net::HotStart()
 {
-	auto r = ReadFromCoreServer(S7_HOT_START);
+	auto r = ReadFromSocket(S7_HOT_START);
 	if (!r.IsSuccess) return QICResult<>::CreateFailedResult(r);
 	return checkStartResult(r.getContent0());
 }
 
 QICResult<> SiemensS7Net::ColdStart()
 {
-	auto r = ReadFromCoreServer(S7_COLD_START);
+	auto r = ReadFromSocket(S7_COLD_START);
 	if (!r.IsSuccess) return QICResult<>::CreateFailedResult(r);
 	return checkStartResult(r.getContent0());
 }
 
 QICResult<> SiemensS7Net::Stop()
 {
-	auto r = ReadFromCoreServer(S7_STOP);
+	auto r = ReadFromSocket(S7_STOP);
 	if (!r.IsSuccess) return QICResult<>::CreateFailedResult(r);
 	return checkStopResult(r.getContent0());
 }
@@ -201,7 +201,7 @@ QICResult<QByteArray> SiemensS7Net::ReadAddressBit(const QString& address)
 {
 	QICResult<QByteArray> result = BuildReadBitRequest(address);
 	if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
-	result = ReadFromCoreServer(result.getContent0());
+	result = ReadFromSocket(result.getContent0());
 	if (!result.IsSuccess) return result;
 	return ParseReadBitResponse(result.getContent0());
 }
@@ -213,7 +213,7 @@ QICResult<QByteArray> SiemensS7Net::ReadAddressData(const QVector<S7Address>& ad
 	// 如果构建失败，返回失败结果
 	if (!r.IsSuccess) return r;
 	// 发送请求到核心服务器并读取返回数据
-	r = ReadFromCoreServer(r.getContent0());
+	r = ReadFromSocket(r.getContent0());
 	// 如果读取失败，返回失败结果
 	if (!r.IsSuccess) return r;
 	// 解析读取的字节数据
@@ -387,7 +387,7 @@ QICResult<QByteArray> SiemensS7Net::ParseReadBitResponse(const QByteArray& conte
 
 QICResult<> SiemensS7Net::WritePLC(const QByteArray& bytes)
 {
-	auto rcvRt = ReadFromCoreServer(bytes);
+	auto rcvRt = ReadFromSocket(bytes);
 	if (!rcvRt.IsSuccess) return QICResult<>::CreateFailedResult(rcvRt);
 	return ParseWriteResponse(rcvRt.getContent0());
 }

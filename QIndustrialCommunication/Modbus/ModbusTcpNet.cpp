@@ -28,7 +28,7 @@ QICResult<QByteArray> ModbusTcpNet::Read(const QString& address, ushort length)
 	auto buildResult = BuildReadRequest(address, length);
 	if (!buildResult.IsSuccess) return buildResult;
 	// 发送请求
-	auto response = ReadFromCoreServer(buildResult.getContent0());
+	auto response = ReadFromSocket(buildResult.getContent0());
 	if (!response.IsSuccess) return response;
 	// 解析响应
 	return ParseReadResponse(response.getContent0());
@@ -40,7 +40,7 @@ QICResult<> ModbusTcpNet::Write(const QString& address, const QByteArray& value)
 	auto buildResult = BuildWriteRequest(address, value);
 	if (!buildResult.IsSuccess) return QICResult<>::CreateFailedResult(buildResult);
 	// 发送请求并解析响应
-	auto response = ReadFromCoreServer(buildResult.getContent0());
+	auto response = ReadFromSocket(buildResult.getContent0());
 	if (!response.IsSuccess) return QICResult<>::CreateFailedResult(response);
 	return ParseWriteResponse(response.getContent0());
 }
@@ -51,7 +51,7 @@ QICResult<> ModbusTcpNet::Write(const QString& address, const QVector<bool>& val
 	auto buildResult = BuildWriteBoolRequest(address, values);
 	if (!buildResult.IsSuccess) return QICResult<>::CreateFailedResult(buildResult);
 	// 发送请求并解析响应
-	auto response = ReadFromCoreServer(buildResult.getContent0());
+	auto response = ReadFromSocket(buildResult.getContent0());
 	if (!response.IsSuccess) return QICResult<>::CreateFailedResult(response);
 	return ParseWriteBoolResponse(response.getContent0());
 }
@@ -62,7 +62,7 @@ QICResult<QVector<bool>> ModbusTcpNet::ReadBool(const QString& address, ushort l
 	auto buildResult = BuildReadBoolRequest(address, length);
 	if (!buildResult.IsSuccess) return QICResult<QVector<bool>>::CreateFailedResult(buildResult);
 	// 发送请求
-	auto response = ReadFromCoreServer(buildResult.getContent0());
+	auto response = ReadFromSocket(buildResult.getContent0());
 	if (!response.IsSuccess) return QICResult<QVector<bool>>::CreateFailedResult(response);
 	// 解析响应
 	auto parsedData = ParseReadBoolResponse(response.getContent0());

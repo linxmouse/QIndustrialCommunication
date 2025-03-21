@@ -52,7 +52,7 @@ protected:
 		if (!socket || !socket->isValid())
 			return QICResult<>::CreateFailedResult("socket is null/invalid.");
 		QByteArray cmd = "CR\r";
-		QICResult<QByteArray> result = ReadFromCoreServer(socket, cmd);
+		QICResult<QByteArray> result = ReadFromSocket(socket, cmd);
 		if (!result.IsSuccess)
 			return QICResult<>::CreateFailedResult(result);
 		return QICResult<>::CreateSuccessResult();
@@ -63,7 +63,7 @@ protected:
 		if (!socket || !socket->isValid())
 			return QICResult<>::CreateFailedResult("socket is null/invalid.");
 		QByteArray cmd = "CQ\r";
-		QICResult<QByteArray> result = ReadFromCoreServer(socket, cmd);
+		QICResult<QByteArray> result = ReadFromSocket(socket, cmd);
 		if (!result.IsSuccess)
 			return QICResult<>::CreateFailedResult(result);
 

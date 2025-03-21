@@ -6,6 +6,7 @@
 #include <QMutex>
 #include <QEventLoop>
 #include <QHostAddress>
+#include <QNetworkProxy>
 #include <QTimer>
 #include "QICResult.h"
 #include "IEthernetIO.h"
@@ -130,6 +131,7 @@ protected:
 		{
 			num++;
 			QTcpSocket *socket = new QTcpSocket();
+			socket->setProxy(QNetworkProxy(QNetworkProxy::NoProxy));
 			try
 			{
 				socket->connectToHost(address, port);
@@ -140,7 +142,7 @@ protected:
 				connectErrorCount = 0;
 				return QICResult<QTcpSocket *>::CreateSuccessResult(socket);
 			}
-			catch (const std::exception &)
+			catch (const std::exception &e)
 			{
 				socket->deleteLater();
 				if (connectErrorCount < 100000000)
@@ -150,55 +152,13 @@ protected:
 					QThread::msleep(100);
 					continue;
 				}
-				if (socket->state() != QTcpSocket::ConnectedState)
-				{
-					qDebug() << QString("Socket Connect Timeout, take %1 ms").arg(timeOut);
-					return QICResult<QTcpSocket *>::CreateFailedResult(QString("Connect Timeout, take %1 ms").arg(timeOut));
-				}
-				else
-				{
-					qDebug() << "CreateSocketAndConnect Exception";
-					return QICResult<QTcpSocket *>::CreateFailedResult("Unknown error");
-				}
+				if (socket->state() != QTcpSocket::ConnectedState) return QICResult<QTcpSocket*>::CreateFailedResult(QString("Connect Timeout, take %1 ms, %2").arg(timeOut).arg(e.what()));
+				else return QICResult<QTcpSocket*>::CreateFailedResult("Unknown errors during socket creation and connection");
 			}
 		}
 	}
 
-	QICResult<QByteArray> ReadFromCoreServer(const QByteArray &send)
-	{
-		InteractiveMutex.lock();
-		QICResult<QTcpSocket *> availableSocket = GetAvailableSocket();
-		if (!availableSocket.IsSuccess)
-		{
-			IsSocketError = true;
-			InteractiveMutex.unlock();
-			QICResult<QByteArray> result;
-			result.CopyErrorFromOther(availableSocket);
-			return result;
-		}
-		QICResult<QByteArray> coreServerResult = ReadFromCoreServer(availableSocket.getContent0(), send);
-		QICResult<QByteArray> finalResult;
-		if (coreServerResult.IsSuccess)
-		{
-			IsSocketError = false;
-			finalResult.IsSuccess = true;
-			finalResult.setContent0(coreServerResult.getContent0());
-			finalResult.Message = "Success";
-		}
-		else
-		{
-			IsSocketError = true;
-			finalResult.CopyErrorFromOther(coreServerResult);
-		}
-		InteractiveMutex.unlock();
-		if (!isPersistentConn && availableSocket.getContent0())
-		{
-			availableSocket.getContent0()->close();
-		}
-		return finalResult;
-	}
-
-	QICResult<QByteArray> ReadFromCoreServer(QTcpSocket *socket, const QByteArray &send)
+	QICResult<QByteArray> ReadFromSocket(QTcpSocket *socket, const QByteArray &send)
 	{
 		// 发送日志
 		if (enableSendRecvLog)
@@ -220,7 +180,41 @@ protected:
 		return QICResult<QByteArray>::CreateSuccessResult(receiveResult.getContent0());
 	}
 
-private:
+	QICResult<QByteArray> ReadFromSocket(const QByteArray &send)
+	{
+		InteractiveMutex.lock();
+		QICResult<QTcpSocket *> availableSocket = GetAvailableSocket();
+		if (!availableSocket.IsSuccess)
+		{
+			IsSocketError = true;
+			InteractiveMutex.unlock();
+			QICResult<QByteArray> result;
+			result.CopyErrorFromOther(availableSocket);
+			return result;
+		}
+		QICResult<QByteArray> coreServerResult = ReadFromSocket(availableSocket.getContent0(), send);
+		QICResult<QByteArray> finalResult;
+		if (coreServerResult.IsSuccess)
+		{
+			IsSocketError = false;
+			finalResult.IsSuccess = true;
+			finalResult.setContent0(coreServerResult.getContent0());
+			finalResult.Message = "Success";
+		}
+		else
+		{
+			IsSocketError = true;
+			finalResult.CopyErrorFromOther(coreServerResult);
+		}
+		InteractiveMutex.unlock();
+		if (!isPersistentConn && availableSocket.getContent0())
+		{
+			availableSocket.getContent0()->close();
+		}
+		return finalResult;
+	}
+
+private:	
 	/// @brief 发送数据包
 	/// @param socket QTcpSocket*
 	/// @param data 将要发送的QByteArray&数据
