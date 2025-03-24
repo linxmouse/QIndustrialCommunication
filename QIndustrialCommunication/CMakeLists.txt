@@ -1,4 +1,10 @@
-﻿# 获取当前目录下的源文件和头文件
+﻿# 定义库版本信息
+set(QIC_VERSION_MAJOR 1)
+set(QIC_VERSION_MINOR 0)
+set(QIC_VERSION_PATCH 0)
+set(QIC_VERSION "${QIC_VERSION_MAJOR}.${QIC_VERSION_MINOR}.${QIC_VERSION_PATCH}")
+
+# 获取当前目录下的源文件和头文件
 file(GLOB SRCS "*.cpp" "*.c")
 file(GLOB HEADERS "*.hpp" "*.h")
 
@@ -60,10 +66,24 @@ target_include_directories(QIC
 )
 
 # TODO: 如有需要，请添加测试并安装目标。
-find_package(Qt5 COMPONENTS Core Network)
+find_package(QT NAMES Qt5 Qt6 COMPONENTS Core Network REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Network REQUIRED)
 
 target_link_libraries(QIC 
 	PRIVATE
-	Qt5::Core
-	Qt5::Network
+	Qt${QT_VERSION_MAJOR}::Core
+	Qt${QT_VERSION_MAJOR}::Network
+)
+
+# 创建一个命名空间别名
+add_library(QIC::QIC ALIAS QIC)
+
+# 导出目标到一个文件中, 使它们可以自由外部项目导入
+export(TARGETS QIC NAMESPACE QIC:: FILE "${CMAKE_CURRENT_SOURCE_DIR}/QICTargets.cmake")
+
+# 将配置文件复制到源目录, 这样整个文件夹都可以被复制
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/QICConfig.cmake.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/QICConfig.cmake"
+	COPYONLY
 )
