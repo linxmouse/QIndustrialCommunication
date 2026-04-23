@@ -1,6 +1,6 @@
 # Qt 工业通信库
 
-[English Version](README.md) | 中文
+[English](README.md) | 中文
 
 ## 项目概述
 

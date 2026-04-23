@@ -1,6 +1,6 @@
 ﻿# Qt Industrial Communication Library
 
-[中文版本](README_zh.md) | English
+[中文](README_zh.md) | English
 
 ## Overview
 
