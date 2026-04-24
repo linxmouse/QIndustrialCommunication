@@ -1,7 +1,11 @@
 #pragma once
 
 #include "QICResult.h"
-#include <QRegExp>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtCore5Compat/QRegExp> // Qt6: QRegExp 移入 Core5Compat 模块
+#else
+#include <QRegExp> // Qt5
+#endif
 
 class ModbusAddress
 {
@@ -9,10 +13,9 @@ public:
 	ModbusAddress()
 		: address(0), functionCode(READ_HOLDING_REGISTER), station(1), isOneBaseAddress(false)
 	{
-
 	}
 
-	static QICResult<ModbusAddress> ParseAddress(const QString& address, quint8 functionCode, quint8 station, bool isOneBaseAddress)
+	static QICResult<ModbusAddress> ParseAddress(const QString &address, quint8 functionCode, quint8 station, bool isOneBaseAddress)
 	{
 		try
 		{
@@ -20,8 +23,10 @@ public:
 			QRegExp reg("^([0-4])(\\d{4})$");
 			if (!reg.exactMatch(address))
 			{
-				if (isOneBaseAddress) return QICResult<ModbusAddress>::CreateFailedResult("Invalid address format, Must be 5 digits (e.g. 40001)");
-				else return QICResult<ModbusAddress>::CreateFailedResult("Invalid address format, Must be 5 digits (e.g. 40000)");
+				if (isOneBaseAddress)
+					return QICResult<ModbusAddress>::CreateFailedResult("Invalid address format, Must be 5 digits (e.g. 40001)");
+				else
+					return QICResult<ModbusAddress>::CreateFailedResult("Invalid address format, Must be 5 digits (e.g. 40000)");
 			}
 			// 解析地址
 			quint16 addr = address.toUShort();
@@ -29,21 +34,22 @@ public:
 			quint16 partAddr = reg.cap(2).toUShort();
 			if (isOneBaseAddress)
 			{
-				if (partAddr < 1) return QICResult<ModbusAddress>::CreateFailedResult("Invalid address value (e.g. 40001)");
-				// 转换位基于0的设备协议地址
+				if (partAddr < 1)
+					return QICResult<ModbusAddress>::CreateFailedResult("Invalid address value (e.g. 40001)");
+				// 转换为地址从0开始
 				addr -= 1;
 			}
 			// 0x01 - 线圈 | 0x02 - 离散输入 | 0x04 - 输入寄存器 | 0x03 - 保持寄存器
-			QVector<quint8> functions = { 
+			QVector<quint8> functions = {
 				READ_DISCRETE_INPUT,
-				READ_HOLDING_REGISTER, 
-				READ_INPUT_REGISTER, 
+				READ_HOLDING_REGISTER,
+				READ_INPUT_REGISTER,
 				WRITE_SINGLE_COIL,
 				WRITE_SINGLE_REGISTER,
 				WRITE_MULTIPLE_COIL,
-				WRITE_MULTIPLE_REGISTER
-			};
-			if (!functions.contains(functionCode)) return QICResult<ModbusAddress>::CreateFailedResult("Unspported address type");
+				WRITE_MULTIPLE_REGISTER};
+			if (!functions.contains(functionCode))
+				return QICResult<ModbusAddress>::CreateFailedResult("Unspported address type");
 			ModbusAddress modbusAddr;
 			modbusAddr.address = addr;
 			modbusAddr.functionCode = functionCode;
@@ -61,6 +67,7 @@ public:
 	quint16 address;
 	quint8 functionCode;
 	quint8 station;
+	// true - 地址从1开始(协议地址自动-1)
 	bool isOneBaseAddress;
 
 	// 读取离散量输入

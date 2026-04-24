@@ -68,12 +68,19 @@ target_include_directories(QIC
 # TODO: 如有需要，请添加测试并安装目标。
 find_package(QT NAMES Qt5 Qt6 COMPONENTS Core Network REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Network REQUIRED)
+if(QT_VERSION_MAJOR EQUAL 6)
+	find_package(Qt6 COMPONENTS Core5Compat REQUIRED)
+endif()
 
 target_link_libraries(QIC 
 	PRIVATE
 	Qt${QT_VERSION_MAJOR}::Core
 	Qt${QT_VERSION_MAJOR}::Network
 )
+
+if(QT_VERSION_MAJOR EQUAL 6)
+	target_link_libraries(QIC PRIVATE Qt6::Core5Compat)
+endif()
 
 # 创建一个命名空间别名
 add_library(QIC::QIC ALIAS QIC)

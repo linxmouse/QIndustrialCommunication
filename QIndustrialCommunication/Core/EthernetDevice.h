@@ -8,6 +8,7 @@
 #include <QHostAddress>
 #include <QNetworkProxy>
 #include <QTimer>
+#include <stdexcept>
 #include "QICResult.h"
 #include "IEthernetIO.h"
 
@@ -26,9 +27,9 @@ public:
 	}
 
 	EthernetDevice(QString ipAddr, int port, bool isPersistentConn, bool enableSendRecvLog, int connectTimeOut, int receiveTimeOut, QObject *parent = nullptr)
-		: ipAddr(ipAddr), port(port), isPersistentConn(isPersistentConn), 
-		enableSendRecvLog(enableSendRecvLog), connectTimeOut(connectTimeOut), 
-		receiveTimeOut(receiveTimeOut), IEthernetIO(parent)
+		: ipAddr(ipAddr), port(port), isPersistentConn(isPersistentConn),
+		  enableSendRecvLog(enableSendRecvLog), connectTimeOut(connectTimeOut),
+		  receiveTimeOut(receiveTimeOut), IEthernetIO(parent)
 	{
 		IsSocketError = false;
 		CoreSocket = nullptr;
@@ -52,11 +53,13 @@ protected:
 		if (!result.IsSuccess)
 		{
 			IsSocketError = true;
-			if (enableSendRecvLog) qDebug() << QString("NetEngine Start Faild: %1").arg(result.Message);
+			if (enableSendRecvLog)
+				qDebug() << QString("NetEngine Start Faild: %1").arg(result.Message);
 			return QICResult<>::CreateFailedResult(result);
 		}
 		CoreSocket = result.getContent0();
-		if (enableSendRecvLog) qDebug() << "NetEngine Started";
+		if (enableSendRecvLog)
+			qDebug() << "NetEngine Started";
 		return QICResult<>::CreateSuccessResult();
 	}
 
@@ -73,7 +76,8 @@ protected:
 			CoreSocket = nullptr;
 		}
 		InteractiveMutex.unlock();
-		if (enableSendRecvLog) qDebug() << "NetEngine Closed";
+		if (enableSendRecvLog)
+			qDebug() << "NetEngine Closed";
 
 		return result;
 	}
@@ -84,7 +88,7 @@ protected:
 	virtual QICResult<> InitializationOnConnect(QTcpSocket *socket) = 0;
 	/// @brief Socket将要关闭是调用
 	/// @param socket 将要关闭的Socket实例
-	/// @return 
+	/// @return
 	virtual QICResult<> ReleaseOnDisconnect(QTcpSocket *socket) = 0;
 
 	QICResult<QTcpSocket *> CreateSocketAndInitialication()
@@ -137,7 +141,8 @@ protected:
 				socket->connectToHost(address, port);
 				if (!socket->waitForConnected(timeOut))
 				{
-					throw std::exception(socket->errorString().toLatin1());
+					// std::exception(const char*) 是 MSVC 扩展，非标准；改用 std::runtime_error 保证跨平台兼容
+					throw std::runtime_error(socket->errorString().toStdString());
 				}
 				connectErrorCount = 0;
 				return QICResult<QTcpSocket *>::CreateSuccessResult(socket);
@@ -152,8 +157,10 @@ protected:
 					QThread::msleep(100);
 					continue;
 				}
-				if (socket->state() != QTcpSocket::ConnectedState) return QICResult<QTcpSocket*>::CreateFailedResult(QString("Connect Timeout, take %1 ms, %2").arg(timeOut).arg(e.what()));
-				else return QICResult<QTcpSocket*>::CreateFailedResult("Unknown errors during socket creation and connection");
+				if (socket->state() != QTcpSocket::ConnectedState)
+					return QICResult<QTcpSocket *>::CreateFailedResult(QString("Connect Timeout, take %1 ms, %2").arg(timeOut).arg(e.what()));
+				else
+					return QICResult<QTcpSocket *>::CreateFailedResult("Unknown errors during socket creation and connection");
 			}
 		}
 	}
@@ -214,7 +221,7 @@ protected:
 		return finalResult;
 	}
 
-private:	
+private:
 	/// @brief 发送数据包
 	/// @param socket QTcpSocket*
 	/// @param data 将要发送的QByteArray&数据

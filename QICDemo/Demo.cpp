@@ -3,9 +3,9 @@
 #include "KeyenceNanoSerialOverTcp.h"
 #include "SiemensS7Net.h"
 #include "ModbusTcpNet.h"
-//#include "BytesOrderHelper.h"
+// #include "BytesOrderHelper.h"
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	// User Code
 	QICResult<int, QString> result = QICResult<int, QString>::CreateSuccessResult(42, "Hello");
@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 	qDebug() << "Content0: " << result.getContent0(); // 输出 42
 	qDebug() << "Content1: " << result.getContent1(); // 输出 "Hello"
 
-#if 0 // 基恩士测试
+#if 0  // 基恩士测试
 	KeyenceNanoSerialOverTcp overTcp{ "192.168.0.78", 8501, true, false };
 	qDebug() << overTcp;
 
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 	else qWarning() << dm88r.Message;
 #endif // 基恩士测试
 
-#if 0 // 西门子S7测试
+#if 0  // 西门子S7测试
 	SiemensS7Net s7Net(SiemensPLCS::S1200, "127.0.0.1");
 	s7Net.DisableSendRecvLog();
 
@@ -105,14 +105,14 @@ int main(int argc, char* argv[])
 	auto rBooleans = s7Net.ReadBool("db3400.5.1");
 #endif // 西门子S7测试
 
-#if 0 // 测试本地字节序到网络字节序的转换
+#if 0  // 测试本地字节序到网络字节序的转换
 	if (BytesOrderHelper::isLittleEndian()) qDebug() << QString::fromLocal8Bit("运行在小端系统上");
 	quint16 value = 0x1234;
 	quint16 networkValue = BytesOrderHelper::toNetworkOrder(value);
 	quint16 rcvValue = BytesOrderHelper::fromNetworkOrder(networkValue);
 #endif // 测试本地字节序到网络字节序的转换
 
-#if 0 // 测试不同大小和不同格式的数据转换的可逆性
+#if 0  // 测试不同大小和不同格式的数据转换的可逆性
 	int intValue = 0x12345678;
 	short shortValue = 0x1234;
 	qint64 longValue = 0x123456789ABCDEF0LL;
@@ -141,17 +141,17 @@ int main(int argc, char* argv[])
 	auto rt = modbusTcp->Write("00001", 1.2345f);
 	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
 	// 写int array
-	QVector<int> intValues{ -123, 456 };
+	QVector<int> intValues{-123, 456};
 	rt = modbusTcp->Write("40001", intValues);
 	// 写ushort array
-	QVector<ushort> ushortValues{ 123, 456 };
+	QVector<ushort> ushortValues{123, 456};
 	rt = modbusTcp->Write("40004", ushortValues);
 	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
 	// 写bool
 	rt = modbusTcp->Write("30001", true);
 	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
 	// 写bool array
-	QVector<bool> boolValues{ true, false, true, false, true, false, true, false, true, false, true, false };
+	QVector<bool> boolValues{true, false, true, false, true, false, true, false, true, false, true, false};
 	rt = modbusTcp->Write("41001", boolValues);
 	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
 	// 写字符串
@@ -178,5 +178,11 @@ int main(int argc, char* argv[])
 	strValue.IsSuccess ? qDebug() << strValue.getContent0() : qDebug() << strValue.Message;
 #endif // Modbus-TCP测试
 
+#ifdef _WIN32
 	system("pause");
+#else
+	// macOS/Linux: 等待用户按回车
+	printf("Press Enter to continue...");
+	getchar();
+#endif
 }

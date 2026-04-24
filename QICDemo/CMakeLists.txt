@@ -9,11 +9,12 @@ endif()
 target_include_directories(QICDemo PRIVATE "../QIndustrialCommunication")
 
 # TODO: 如有需要，请添加测试并安装目标。
-find_package(Qt5 COMPONENTS Core Network)
+ find_package(QT NAMES Qt5 Qt6 COMPONENTS Core Network REQUIRED)
+ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Network REQUIRED)
 
 target_link_libraries(QICDemo 
 	PRIVATE
-	Qt5::Core
-	Qt5::Network
+	Qt${QT_VERSION_MAJOR}::Core
+	Qt${QT_VERSION_MAJOR}::Network
 	QIC
 )

@@ -2,12 +2,12 @@
 
 enum class ModbusDataType
 {
-	// ±£³Ö¼Ä´æÆ÷
+	// ä¿æŒå¯„å­˜å™¨
 	HoldingRegister,
-	// ÊäÈë¼Ä´æÆ÷
+	// è¾“å…¥å¯„å­˜å™¨
 	InputRegister,
-	// ÏßÈ¦
+	// çº¿åœˆ
 	Coil,
-	// ÀëÉ¢ÊäÈë
+	// ç¦»æ•£è¾“å…¥
 	DiscreteInput,
 };

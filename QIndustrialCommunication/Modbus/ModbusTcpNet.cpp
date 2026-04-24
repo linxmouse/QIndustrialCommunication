@@ -107,7 +107,7 @@ QICResult<QByteArray> ModbusTcpNet::ParseReadResponse(const QByteArray &response
 	// 校验功能码:检查功能码是否带有异常标志(高位为1)
 	quint8 functionCode = static_cast<quint8>(response[7]);
 	if (functionCode & 0x80)
-		return QICResult<QByteArray>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(response[8], 2, 16, QChar('0')));
+		return QICResult<QByteArray>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(static_cast<quint8>(response[8]), 2, 16, QChar('0')));
 	// 提取有效载荷: FunctionCode(1) | DataLength(1) | Data(variable)
 	quint8 dataLenth = static_cast<quint8>(response[8]);
 	auto responseData = response.mid(9, dataLenth);
@@ -140,7 +140,7 @@ QICResult<QByteArray> ModbusTcpNet::ParseReadBoolResponse(const QByteArray &resp
 	// 校验功能码:检查功能码是否带有异常标志(高位为1)
 	quint8 functionCode = static_cast<quint8>(response[7]);
 	if (functionCode & 0x80)
-		return QICResult<QByteArray>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(response[8], 2, 16, QChar('0')));
+		return QICResult<QByteArray>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(static_cast<quint8>(response[8]), 2, 16, QChar('0')));
 	// 提取有效载荷: FunctionCode(1) | DataLength(1) | Data(variable)
 	quint8 dataLength = static_cast<quint8>(response[8]);
 	auto responseData = response.mid(9, dataLength);
@@ -155,8 +155,8 @@ QICResult<QByteArray> ModbusTcpNet::BuildWriteRequest(const QString &address, co
 	if (!addr.IsSuccess)
 		return QICResult<QByteArray>::CreateFailedResult(addr);
 	// 构建PDU
-	// WRITE_SINGLE_REGISTER:功能码(1)+地址(2)+Data(variable)
-	// WRITE_MULTIPLE_REGISTER:功能码(1)+地址(2)+寄存器数(2)+字节长度(1)+Data(variable)
+	// WRITE_SINGLE_REGISTER:	功能码(1)+地址(2)+Data(variable)
+	// WRITE_MULTIPLE_REGISTER:	功能码(1)+起始地址(2)+寄存器数(2)+字节长度(1)+Data(variable)
 	QByteArray pdu;
 	QDataStream stream(&pdu, QIODevice::WriteOnly);
 	stream.setByteOrder(QDataStream::BigEndian);
@@ -181,7 +181,7 @@ QICResult<> ModbusTcpNet::ParseWriteResponse(const QByteArray &response)
 	// 校验功能码:检查功能码是否带有异常标志(高位为1)
 	quint8 functionCode = static_cast<quint8>(response[7]);
 	if (functionCode & 0x80)
-		return QICResult<>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(response[8], 2, 16, QChar('0')));
+		return QICResult<>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(static_cast<quint8>(response[8]), 2, 16, QChar('0')));
 	// 验证功能码是否匹配
 	if (functionCode != ModbusAddress::WRITE_SINGLE_REGISTER && functionCode != ModbusAddress::WRITE_MULTIPLE_REGISTER)
 		return QICResult<>::CreateFailedResult("Function code mismath");
@@ -230,7 +230,7 @@ QICResult<> ModbusTcpNet::ParseWriteBoolResponse(const QByteArray &response)
 	// 校验功能码:检查功能码是否带有异常标志(高位为1)
 	quint8 functionCode = static_cast<quint8>(response[7]);
 	if (functionCode & 0x80)
-		return QICResult<>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(response[8], 2, 16, QChar('0')));
+		return QICResult<>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(static_cast<quint8>(response[8]), 2, 16, QChar('0')));
 	// 验证功能码是否匹配
 	if (functionCode != ModbusAddress::WRITE_SINGLE_COIL && functionCode != ModbusAddress::WRITE_MULTIPLE_COIL)
 		return QICResult<>::CreateFailedResult("Function code mismath");

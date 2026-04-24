@@ -2,7 +2,11 @@
 
 #include <QByteArray>
 #include <QVector>
-#include <QTextCodec>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtCore5Compat/QTextCodec> // Qt6: QTextCodec 移入 Core5Compat 模块
+#else
+#include <QTextCodec> // Qt5
+#endif
 #include <cstdint>
 #include <vector>
 
@@ -18,15 +22,17 @@ public:
 	 * @param df 字节序
 	 * @return 返回大端序
 	 */
-	template<typename T>
+	template <typename T>
 	static T Convert(T value, DataFormat df)
 	{
 		// 如果是简单传输，直接返回
-		if (df == DataFormat::ABCD) return value;
-		union {
+		if (df == DataFormat::ABCD)
+			return value;
+		union
+		{
 			T val;
 			uint8_t bytes[sizeof(T)];
-		}src, dst;
+		} src, dst;
 		src.val = value;
 		switch (df)
 		{
@@ -80,11 +86,11 @@ public:
 	 * @param df 字节序
 	 * @return 返回大端序数组
 	 */
-	template<typename T>
-	static std::vector<T> ConvertArray(const std::vector<T>& values, DataFormat df)
+	template <typename T>
+	static std::vector<T> ConvertArray(const std::vector<T> &values, DataFormat df)
 	{
 		std::vector<T> result;
-		for (const auto& val : values)
+		for (const auto &val : values)
 		{
 			result.push_back(Convert(val, df));
 		}
@@ -93,17 +99,17 @@ public:
 
 	/**
 	 * @brief 数组批量转换
-	 * @tparam T 
+	 * @tparam T
 	 * @param values 需要转换的QVector数组
 	 * @param df 字节序
 	 * @return 返回大端序数组
 	 */
-	template<typename T>
-	static QVector<T> ConvertArray(const QVector<T>& values, DataFormat df)
+	template <typename T>
+	static QVector<T> ConvertArray(const QVector<T> &values, DataFormat df)
 	{
 		QVector<T> result;
 		result.reserve(values.size());
-		for (const auto& val: values)
+		for (const auto &val : values)
 		{
 			result.append(Convert(val, df));
 		}
@@ -116,9 +122,10 @@ public:
 	 * @param df 字节序
 	 * @return 大端字节序
 	 */
-	static QByteArray ConvertByteArray(const QByteArray& bytes, DataFormat df)
+	static QByteArray ConvertByteArray(const QByteArray &bytes, DataFormat df)
 	{
-		if (bytes.isEmpty()) return bytes;
+		if (bytes.isEmpty())
+			return bytes;
 		QByteArray result = bytes;
 		switch (df)
 		{
@@ -156,9 +163,10 @@ public:
 	 * @param isReverseByteWord 是否对字反转
 	 * @return Unicode String
 	 */
-	static QString ConvertString(const QString& str, QTextCodec* codec, bool isReverseByteWord)
+	static QString ConvertString(const QString &str, QTextCodec *codec, bool isReverseByteWord)
 	{
-		if (str.isEmpty() || !codec) return str;
+		if (str.isEmpty() || !codec)
+			return str;
 		QByteArray bytes = codec->fromUnicode(str);
 		if (isReverseByteWord)
 		{

@@ -4,7 +4,11 @@
 #include <QByteArray>
 #include <QDataStream>
 #include <QVector>
-#include <QTextCodec>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtCore5Compat/QTextCodec> // Qt6: QTextCodec ÒÆÈë Core5Compat Ä£¿é
+#else
+#include <QTextCodec> // Qt5
+#endif
 #include <QScopedPointer>
 #include "QICResult.h"
 #include "BytesOrderBase.h"
