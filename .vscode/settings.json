@@ -1,0 +1,17 @@
+{
+    // 让 .h 按 C++ 解析，避免被当成 C 导致 Qt 语法误报。
+    "files.associations": {
+        "*.h": "cpp"
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    // Apple-Clang:
+    "C_Cpp.default.cppStandard": "c++11",
+    "C_Cpp.default.intelliSenseMode": "macos-clang-arm64"
+    // MSVC:
+    // "C_Cpp.default.intelliSenseMode": "windows-msvc-x64",
+    // "C_Cpp.default.compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/<version>/bin/Hostx64/x64/cl.exe",
+    // MinGW-w64:
+    // "C_Cpp.default.intelliSenseMode": "windows-gcc-x64",
+    // "C_Cpp.default.compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+    // 说明：如果已使用 CMake Presets + configurationProvider，通常不必手填 compilerPath。
+}
