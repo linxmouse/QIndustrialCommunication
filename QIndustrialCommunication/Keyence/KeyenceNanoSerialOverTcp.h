@@ -19,35 +19,35 @@ class KeyenceNanoSerialOverTcp : public EthernetDevice
 	Q_OBJECT
 
 public:
-	KeyenceNanoSerialOverTcp(QString ipAddr, int port, bool isPersistentConn, bool enableSendRecvLog, int connectTimeOut = 3000, int receiveTimeOut = 3000, QObject* parent = nullptr);
+	KeyenceNanoSerialOverTcp(QString ipAddr, int port, bool isPersistentConn, bool enableSendRecvLog, int connectTimeOut = 3000, int receiveTimeOut = 3000, QObject *parent = nullptr);
 	~KeyenceNanoSerialOverTcp();
 
 public:
-	// ÈÃ»ùÀàÖĞÃûÎª Write µÄËùÓĞº¯ÊıÔÚÅÉÉúÀàÖĞ¶¼ÊÇ¿É¼ûµÄ£¬ÓëÅÉÉúÀà×Ô¼º¶¨ÒåµÄ Write º¯ÊıÖØÔØ£¨Overload£©£¬¶ø²»ÊÇ±»Òş²Ø£¨Hide£©
+	// è®©åŸºç±»ä¸­åä¸º Write çš„æ‰€æœ‰å‡½æ•°åœ¨æ´¾ç”Ÿç±»ä¸­éƒ½æ˜¯å¯è§çš„ï¼Œä¸æ´¾ç”Ÿç±»è‡ªå·±å®šä¹‰çš„ Write å‡½æ•°é‡è½½ï¼ˆOverloadï¼‰ï¼Œè€Œä¸æ˜¯è¢«éšè—ï¼ˆHideï¼‰
 	using EthernetDevice::Write;
-	// ÈÃ»ùÀàÖĞÃûÎª ReadBool µÄËùÓĞº¯ÊıÔÚÅÉÉúÀàÖĞ¶¼ÊÇ¿É¼ûµÄ£¬ÓëÅÉÉúÀà×Ô¼º¶¨ÒåµÄ ReadBool º¯ÊıÖØÔØ£¨Overload£©£¬¶ø²»ÊÇ±»Òş²Ø£¨Hide£©
+	// è®©åŸºç±»ä¸­åä¸º ReadBool çš„æ‰€æœ‰å‡½æ•°åœ¨æ´¾ç”Ÿç±»ä¸­éƒ½æ˜¯å¯è§çš„ï¼Œä¸æ´¾ç”Ÿç±»è‡ªå·±å®šä¹‰çš„ ReadBool å‡½æ•°é‡è½½ï¼ˆOverloadï¼‰ï¼Œè€Œä¸æ˜¯è¢«éšè—ï¼ˆHideï¼‰
 	using EthernetDevice::ReadBool;
 
-	QICResult<QByteArray> Read(const QString& address, ushort length) override;
+	QICResult<QByteArray> Read(const QString &address, ushort length) override;
 
-	QICResult<QVector<bool>> ReadBool(const QString& address, ushort length) override;
+	QICResult<QVector<bool>> ReadBool(const QString &address, ushort length) override;
 
-	QICResult<> Write(const QString& address, const QByteArray& value) override;
+	QICResult<> Write(const QString &address, const QByteArray &value) override;
 
-	QICResult<> Write(const QString& address, bool value) override;
+	QICResult<> Write(const QString &address, bool value) override;
 
-	QICResult<> Write(const QString& address, const QVector<bool>& values) override;
+	QICResult<> Write(const QString &address, const QVector<bool> &values) override;
 
-	friend QDebug operator<<(QDebug debug, const KeyenceNanoSerialOverTcp& kvNano)
+	friend QDebug operator<<(QDebug debug, const KeyenceNanoSerialOverTcp &kvNano)
 	{
-		// QDebugStateSaver±£´æÁË½øÈë´úÂë¿éÊ±µÄQDebug×´Ì¬£¬²¢ÔÚ´úÂë¿é½áÊøÊ±»Ö¸´ÁËÕâ¸ö×´Ì¬
+		// QDebugStateSaverä¿å­˜äº†è¿›å…¥ä»£ç å—æ—¶çš„QDebugçŠ¶æ€ï¼Œå¹¶åœ¨ä»£ç å—ç»“æŸæ—¶æ¢å¤äº†è¿™ä¸ªçŠ¶æ€
 		QDebugStateSaver saver(debug);
 		debug << "KeyenceNanoSerialOverTcp [" << kvNano.ipAddr << ":" << kvNano.port << "]";
 		return debug;
 	}
 
 protected:
-	QICResult<> InitializationOnConnect(QTcpSocket* socket) override
+	QICResult<> InitializationOnConnect(QTcpSocket *socket) override
 	{
 		if (!socket || !socket->isValid())
 			return QICResult<>::CreateFailedResult("socket is null/invalid.");
@@ -58,7 +58,7 @@ protected:
 		return QICResult<>::CreateSuccessResult();
 	}
 
-	QICResult<> ReleaseOnDisconnect(QTcpSocket* socket) override
+	QICResult<> ReleaseOnDisconnect(QTcpSocket *socket) override
 	{
 		if (!socket || !socket->isValid())
 			return QICResult<>::CreateFailedResult("socket is null/invalid.");
@@ -71,65 +71,65 @@ protected:
 	}
 
 private:
-	/// @brief Ğ£Ñé»ØÓ¦°üµÄĞ­Òé¸ñÊ½
+	/// @brief æ ¡éªŒå›åº”åŒ…çš„åè®®æ ¼å¼
 	/// @param ack
 	/// @return
-	QICResult<> ParseReadResponse(const QByteArray& ack)
+	QICResult<> ParseReadResponse(const QByteArray &ack)
 	{
 		if (ack.isEmpty())
-			return QICResult<>::CreateFailedResult(QString::fromLocal8Bit("½ÓÊÕµÄÊı¾İ³¤¶ÈÎª0"));
+			return QICResult<>::CreateFailedResult(u8"æ¥æ”¶çš„æ•°æ®é•¿åº¦ä¸º0");
 		// ASCII for 'E'
 		if (ack.at(0) == 69)
-			return QICResult<>::CreateFailedResult(QString::fromLocal8Bit("PLC·´À¡ĞÅºÅ´íÎó£º") + QString::fromStdString(ack.toStdString()));
+			return QICResult<>::CreateFailedResult(u8"PLCåé¦ˆä¿¡å·é”™è¯¯ï¼š" + QString::fromStdString(ack.toStdString()));
 		// ASCII for '\n' and '\r'
 		if (ack.at(ack.size() - 1) != 10 || ack.at(ack.size() - 2) != 13)
-			return QICResult<>::CreateFailedResult(QString::fromLocal8Bit("PLC·´À¡ĞÅºÅ´íÎó£º") + ack.toHex(' '));
+			return QICResult<>::CreateFailedResult(u8"PLCåé¦ˆä¿¡å·é”™è¯¯ï¼š" + ack.toHex(' '));
 
 		return QICResult<>::CreateSuccessResult();
 	}
 
-	/// @brief Ğ£Ñé»ØÓ¦°üµÄĞ­Òé¸ñÊ½
+	/// @brief æ ¡éªŒå›åº”åŒ…çš„åè®®æ ¼å¼
 	/// @param ack
 	/// @return
-	QICResult<> ParseWriteResponse(const QByteArray& ack)
+	QICResult<> ParseWriteResponse(const QByteArray &ack)
 	{
 		if (ack.isEmpty())
-			return QICResult<>::CreateFailedResult(QString::fromLocal8Bit("½ÓÊÕµÄÊı¾İ³¤¶ÈÎª0"));
-		// ¼ì²éPLCµÄ»ØÓ¦ÊÇ·ñÊÇ'OK'
+			return QICResult<>::CreateFailedResult(u8"æ¥æ”¶çš„æ•°æ®é•¿åº¦ä¸º0");
+		// æ£€æŸ¥PLCçš„å›åº”æ˜¯å¦æ˜¯'OK'
 		if (ack.at(0) != 79 || ack.at(1) != 75)
-			return QICResult<>::CreateFailedResult(QString::fromLocal8Bit("PLC·´À¡ĞÅºÅ´íÎó£º") + ack.toHex(' '));
+			return QICResult<>::CreateFailedResult(u8"PLCåé¦ˆä¿¡å·é”™è¯¯ï¼š" + ack.toHex(' '));
 
 		return QICResult<>::CreateSuccessResult();
 	}
 
-	/// @brief ¹¹½¨¶ÁÈ¡Êı¾İ°ü
-	/// @param address ×Ö·û´®µØÖ·
-	/// @param length ¶ÁÈ¡µÄ³¤¶È
-	/// @return ¶ÁÈ¡Êı¾İ°ü
-	QICResult<QByteArray> BuildReadRequest(const QString& address, ushort length)
+	/// @brief æ„å»ºè¯»å–æ•°æ®åŒ…
+	/// @param address å­—ç¬¦ä¸²åœ°å€
+	/// @param length è¯»å–çš„é•¿åº¦
+	/// @return è¯»å–æ•°æ®åŒ…
+	QICResult<QByteArray> BuildReadRequest(const QString &address, ushort length)
 	{
 		QICResult<QString, int> result = ParseAddress(address);
 		if (!result.IsSuccess)
 			return QICResult<QByteArray>::CreateFailedResult(result);
 		if ((result.getContent0() == "CTH" || result.getContent0() == "CTC" ||
-			result.getContent0() == "C" || result.getContent0() == "T") &&
+			 result.getContent0() == "C" || result.getContent0() == "T") &&
 			length > 1)
 		{
 			length = static_cast<ushort>(length / 2);
 		}
 		QString packet = QString("RDS %1%2 %3\r")
-			.arg(result.getContent0())
-			.arg(result.getContent1())
-			.arg(length);
+							 .arg(result.getContent0())
+							 .arg(result.getContent1())
+							 .arg(length);
 		QByteArray bytes = packet.toLatin1();
 		return QICResult<QByteArray>::CreateSuccessResult(bytes);
 	}
 
-	/// @brief ¹¹½¨Ğ´ÈëÊı¾İ°ü
-	/// @param address ×Ö·û´®µØÖ·
-	/// @param value Ğ´ÈëµÄÖµ
-	/// @return Ğ´ÈëÊı¾İ°ü
-	QICResult<QByteArray> BuildWriteRequest(const QString& address, const QByteArray& value)
+	/// @brief æ„å»ºå†™å…¥æ•°æ®åŒ…
+	/// @param address å­—ç¬¦ä¸²åœ°å€
+	/// @param value å†™å…¥çš„å€¼
+	/// @return å†™å…¥æ•°æ®åŒ…
+	QICResult<QByteArray> BuildWriteRequest(const QString &address, const QByteArray &value)
 	{
 		QICResult<QString, int> result = ParseAddress(address);
 		if (!result.IsSuccess)
@@ -156,8 +156,8 @@ private:
 			}
 		}
 		else if (result.getContent0() == "T" ||
-			result.getContent0() == "C" ||
-			result.getContent0() == "CTH")
+				 result.getContent0() == "C" ||
+				 result.getContent0() == "CTH")
 		{
 			int num = value.size() / 4;
 			stream << num << " ";
@@ -174,38 +174,42 @@ private:
 		return QICResult<QByteArray>::CreateSuccessResult(packet.toLatin1());
 	}
 
-	/// @brief ¹¹½¨Ğ´ÈëÊı¾İ°ü
-	/// @param address ×Ö·û´®µØÖ·
-	/// @param value Ğ´ÈëµÄÖµ
-	/// @return Ğ´ÈëÊı¾İ°ü
-	QICResult<QByteArray> BuildWriteRequest(const QString& address, bool value)
+	/// @brief æ„å»ºå†™å…¥æ•°æ®åŒ…
+	/// @param address å­—ç¬¦ä¸²åœ°å€
+	/// @param value å†™å…¥çš„å€¼
+	/// @return å†™å…¥æ•°æ®åŒ…
+	QICResult<QByteArray> BuildWriteRequest(const QString &address, bool value)
 	{
 		QICResult<QString, int> result = ParseAddress(address);
-		if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
+		if (!result.IsSuccess)
+			return QICResult<QByteArray>::CreateFailedResult(result);
 		QString packet;
 		QTextStream stream(&packet);
-		if (value) stream << "ST ";
-		else stream << "RS ";
+		if (value)
+			stream << "ST ";
+		else
+			stream << "RS ";
 		stream << result.getContent0() << result.getContent1() << "\r";
 		return QICResult<QByteArray>::CreateSuccessResult(packet.toLatin1());
 	}
 
-	/// @brief ¹¹½¨Ğ´ÈëÊı¾İ°ü
-	/// @param address ×Ö·û´®µØÖ·
-	/// @param value Ğ´ÈëµÄÖµ
-	/// @return Ğ´ÈëÊı¾İ°ü
-	QICResult<QByteArray> BuildWriteRequest(const QString& address, QVector<bool> values)
+	/// @brief æ„å»ºå†™å…¥æ•°æ®åŒ…
+	/// @param address å­—ç¬¦ä¸²åœ°å€
+	/// @param value å†™å…¥çš„å€¼
+	/// @return å†™å…¥æ•°æ®åŒ…
+	QICResult<QByteArray> BuildWriteRequest(const QString &address, QVector<bool> values)
 	{
 		QICResult<QString, int> result = ParseAddress(address);
-		if (!result.IsSuccess) return QICResult<QByteArray>::CreateFailedResult(result);
+		if (!result.IsSuccess)
+			return QICResult<QByteArray>::CreateFailedResult(result);
 		QString packet;
 		QTextStream stream(&packet);
 		stream << "WRS "
-			<< result.getContent0()
-			<< result.getContent1()
-			<< " "
-			<< values.length();
-		for (auto& value : values)
+			   << result.getContent0()
+			   << result.getContent1()
+			   << " "
+			   << values.length();
+		for (auto &value : values)
 		{
 			auto tf = value ? "1" : "0";
 			stream << " " << tf;
@@ -214,11 +218,11 @@ private:
 		return QICResult<QByteArray>::CreateSuccessResult(packet.toLatin1());
 	}
 
-	/// @brief ½âÎöÊı¾İ
-	/// @param addressType µØÖ·ÀàĞÍ
-	/// @param response QTcpSocket¶ÁÈ¡µÄÍêÕû±¨ÎÄ
-	/// @return Ğ¯´ø´¿Êı¾İ²¿·ÖµÄQICResult<QByteArray>
-	QICResult<QByteArray> ParseReadResponse(const QString& addressType, const QByteArray& response)
+	/// @brief è§£ææ•°æ®
+	/// @param addressType åœ°å€ç±»å‹
+	/// @param response QTcpSocketè¯»å–çš„å®Œæ•´æŠ¥æ–‡
+	/// @return æºå¸¦çº¯æ•°æ®éƒ¨åˆ†çš„QICResult<QByteArray>
+	QICResult<QByteArray> ParseReadResponse(const QString &addressType, const QByteArray &response)
 	{
 		try
 		{
@@ -235,7 +239,7 @@ private:
 				num = 1;
 			else if (addressType == "Z")
 				num = 1;
-			// ¶ÔÓÚÆäËûÀàĞÍ£¬³õÊ¼»¯Îª0
+			// å¯¹äºå…¶ä»–ç±»å‹ï¼Œåˆå§‹åŒ–ä¸º0
 			else
 				num = 0;
 
@@ -267,19 +271,19 @@ private:
 				return QICResult<QByteArray>::CreateSuccessResult(resultArray);
 			}
 
-			return QICResult<QByteArray>::CreateFailedResult("ÊäÈëµÄÀàĞÍ²»Ö§³Ö£¬ÇëÖØĞÂÊäÈë");
+			return QICResult<QByteArray>::CreateFailedResult("è¾“å…¥çš„ç±»å‹ä¸æ”¯æŒï¼Œè¯·é‡æ–°è¾“å…¥");
 		}
-		catch (const QException& ex)
+		catch (const QException &ex)
 		{
 			return QICResult<QByteArray>::CreateFailedResult("Extract Msg: " + QString(ex.what()) + "\nData: " + response.toHex(' '));
 		}
 	}
 
-	/// @brief ½âÎöBooleanÊı¾İ
-	/// @param addressType µØÖ·ÀàĞÍ
-	/// @param response QTcpSocket¶ÁÈ¡µÄÍêÕû±¨ÎÄ
-	/// @return Ğ¯´ø´¿Êı¾İ²¿·ÖµÄQICResult<QVector<bool>>
-	QICResult<QVector<bool>> ParsedReadBoolResponse(const QString& addressType, const QByteArray& response)
+	/// @brief è§£æBooleanæ•°æ®
+	/// @param addressType åœ°å€ç±»å‹
+	/// @param response QTcpSocketè¯»å–çš„å®Œæ•´æŠ¥æ–‡
+	/// @return æºå¸¦çº¯æ•°æ®éƒ¨åˆ†çš„QICResult<QVector<bool>>
+	QICResult<QVector<bool>> ParsedReadBoolResponse(const QString &addressType, const QByteArray &response)
 	{
 		try
 		{
@@ -296,7 +300,7 @@ private:
 			{
 				QStringList strList = str.split(' ', Qt::SkipEmptyParts);
 				QVector<bool> boolArray;
-				for (const auto& item : strList)
+				for (const auto &item : strList)
 				{
 					boolArray.push_back(item == "1");
 				}
@@ -314,22 +318,22 @@ private:
 			{
 				QStringList strList = str.split(' ', Qt::SkipEmptyParts);
 				QVector<bool> boolArray;
-				for (const auto& item : strList)
+				for (const auto &item : strList)
 				{
 					boolArray.push_back(item.startsWith("1"));
 				}
 				return QICResult<QVector<bool>>::CreateSuccessResult(boolArray);
 			}
 
-			return QICResult<QVector<bool>>::CreateFailedResult("ÊäÈëµÄÀàĞÍ²»Ö§³Ö£¬ÇëÖØĞÂÊäÈë");
+			return QICResult<QVector<bool>>::CreateFailedResult("è¾“å…¥çš„ç±»å‹ä¸æ”¯æŒï¼Œè¯·é‡æ–°è¾“å…¥");
 		}
-		catch (const std::exception& ex)
+		catch (const std::exception &ex)
 		{
 			return QICResult<QVector<bool>>::CreateFailedResult("Extract Msg: " + QString(ex.what()) + "\nData: " + response.toHex(' '));
 		}
 	}
 
-	/// @brief ·ÖÎöµØÖ·ĞÅÏ¢
+	/// @brief åˆ†æåœ°å€ä¿¡æ¯
 	/// @param address
 	/// @return
 	QICResult<QString, int> ParseAddress(QString address)
@@ -369,7 +373,7 @@ private:
 
 			throw QException();
 		}
-		catch (const QException& ex)
+		catch (const QException &ex)
 		{
 			return QICResult<QString, int>::CreateFailedResult(ex.what());
 		}

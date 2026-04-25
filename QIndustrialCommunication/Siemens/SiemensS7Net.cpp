@@ -88,7 +88,7 @@ QICResult<> SiemensS7Net::InitializationOnConnect(QTcpSocket *socket)
 	if (!r.IsSuccess)
 		return QICResult<>::CreateFailedResult(r);
 	QByteArray content = r.getContent0();
-	pduLength = this->BytesOrderPtr->ConvertToUInt16(content.mid(content.count() - 2), 0) - 20;
+	pduLength = this->BytesOrderPtr->ConvertToUInt16(content.mid(content.size() - 2), 0) - 20;
 	if (pduLength < 200)
 		pduLength = 200;
 	return QICResult<>::CreateSuccessResult();

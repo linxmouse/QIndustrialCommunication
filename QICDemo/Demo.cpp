@@ -10,15 +10,15 @@ int main(int argc, char *argv[])
 	// User Code
 	QICResult<int, QString> result = QICResult<int, QString>::CreateSuccessResult(42, "Hello");
 	qDebug() << result.ToMessageShowString();
-	qDebug() << "Content0: " << result.getContent0(); // Êä³ö 42
-	qDebug() << "Content1: " << result.getContent1(); // Êä³ö "Hello"
+	qDebug() << "Content0: " << result.getContent0(); // è¾“å‡º 42
+	qDebug() << "Content1: " << result.getContent1(); // è¾“å‡º "Hello"
 
-#if 0  // »ù¶÷Ê¿²âÊÔ
+#if 0  // åŸºæ©å£«æµ‹è¯•
 	KeyenceNanoSerialOverTcp overTcp{ "192.168.0.78", 8501, true, false };
 	qDebug() << overTcp;
 
-	// Èç¹ûR305 = true, ÄÇÃ´DM82Îªfloat(88.88), DM84Îªushort(77)
-	// Èç¹ûR306 = true, ÄÇÃ´DM82¡¢DM84µÄÖµ¶¼Îª0
+	// å¦‚æœR305 = true, é‚£ä¹ˆDM82ä¸ºfloat(88.88), DM84ä¸ºushort(77)
+	// å¦‚æœR306 = true, é‚£ä¹ˆDM82ã€DM84çš„å€¼éƒ½ä¸º0
 	auto r305w = overTcp.Write("R305", true);
 	if (r305w.IsSuccess) qDebug() << "Write true to R305 success!";
 	auto r305r = overTcp.ReadBool("R305");
@@ -70,9 +70,9 @@ int main(int argc, char *argv[])
 	dm88r = overTcp.ReadString("dm88", 2);
 	if (dm88r.IsSuccess) qDebug() << "dm88's value: " << dm88r.getContent0();
 	else qWarning() << dm88r.Message;
-#endif // »ù¶÷Ê¿²âÊÔ
+#endif // åŸºæ©å£«æµ‹è¯•
 
-#if 0  // Î÷ÃÅ×ÓS7²âÊÔ
+#if 0  // è¥¿é—¨å­S7æµ‹è¯•
 	SiemensS7Net s7Net(SiemensPLCS::S1200, "127.0.0.1");
 	s7Net.DisableSendRecvLog();
 
@@ -103,16 +103,16 @@ int main(int argc, char *argv[])
 	isWriteSucc = s7Net.Write("db3400.30", values);
 
 	auto rBooleans = s7Net.ReadBool("db3400.5.1");
-#endif // Î÷ÃÅ×ÓS7²âÊÔ
+#endif // è¥¿é—¨å­S7æµ‹è¯•
 
-#if 0  // ²âÊÔ±¾µØ×Ö½ÚĞòµ½ÍøÂç×Ö½ÚĞòµÄ×ª»»
-	if (BytesOrderHelper::isLittleEndian()) qDebug() << QString::fromLocal8Bit("ÔËĞĞÔÚĞ¡¶ËÏµÍ³ÉÏ");
+#if 0  // æµ‹è¯•æœ¬åœ°å­—èŠ‚åºåˆ°ç½‘ç»œå­—èŠ‚åºçš„è½¬æ¢
+	if (BytesOrderHelper::isLittleEndian()) qDebug() << QString::fromLocal8Bit("è¿è¡Œåœ¨å°ç«¯ç³»ç»Ÿä¸Š");
 	quint16 value = 0x1234;
 	quint16 networkValue = BytesOrderHelper::toNetworkOrder(value);
 	quint16 rcvValue = BytesOrderHelper::fromNetworkOrder(networkValue);
-#endif // ²âÊÔ±¾µØ×Ö½ÚĞòµ½ÍøÂç×Ö½ÚĞòµÄ×ª»»
+#endif // æµ‹è¯•æœ¬åœ°å­—èŠ‚åºåˆ°ç½‘ç»œå­—èŠ‚åºçš„è½¬æ¢
 
-#if 0  // ²âÊÔ²»Í¬´óĞ¡ºÍ²»Í¬¸ñÊ½µÄÊı¾İ×ª»»µÄ¿ÉÄæĞÔ
+#if 0  // æµ‹è¯•ä¸åŒå¤§å°å’Œä¸åŒæ ¼å¼çš„æ•°æ®è½¬æ¢çš„å¯é€†æ€§
 	int intValue = 0x12345678;
 	short shortValue = 0x1234;
 	qint64 longValue = 0x123456789ABCDEF0LL;
@@ -131,57 +131,57 @@ int main(int argc, char *argv[])
 	BytesOrderBase::testConversion<long>(longValue, DataFormat::DCBA);
 	BytesOrderBase::testConversion<long>(longValue, DataFormat::BADC);
 	BytesOrderBase::testConversion<long>(longValue, DataFormat::CDAB);
-#endif // ²âÊÔ²»Í¬´óĞ¡ºÍ²»Í¬¸ñÊ½µÄÊı¾İ×ª»»µÄ¿ÉÄæĞÔ
+#endif // æµ‹è¯•ä¸åŒå¤§å°å’Œä¸åŒæ ¼å¼çš„æ•°æ®è½¬æ¢çš„å¯é€†æ€§
 
-#if 1 // Modbus-TCP²âÊÔ
+#if 1 // Modbus-TCPæµ‹è¯•
 	QScopedPointer<ModbusTcpNet> modbusTcp(new ModbusTcpNet("127.0.0.1", 502, true, true));
 	modbusTcp->setDataFormat(DataFormat::ABCD);
 	modbusTcp->setIsOneBaseAddress(true);
-	// Ğ´ushort
+	// å†™ushort
 	auto rt = modbusTcp->Write("00001", 1.2345f);
 	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
-	// Ğ´int array
+	// å†™int array
 	QVector<int> intValues{-123, 456};
 	rt = modbusTcp->Write("40001", intValues);
-	// Ğ´ushort array
+	// å†™ushort array
 	QVector<ushort> ushortValues{123, 456};
 	rt = modbusTcp->Write("40004", ushortValues);
 	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
-	// Ğ´bool
+	// å†™bool
 	rt = modbusTcp->Write("30001", true);
 	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
-	// Ğ´bool array
+	// å†™bool array
 	QVector<bool> boolValues{true, false, true, false, true, false, true, false, true, false, true, false};
 	rt = modbusTcp->Write("41001", boolValues);
 	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
-	// Ğ´×Ö·û´®
-	rt = modbusTcp->WriteString("30001", QString::fromLocal8Bit("ÄãºÃ£¬ÊÀ½ç£¬Modbus-TCP×Ö·û´®²âÊÔ!"));
+	// å†™å­—ç¬¦ä¸²
+	rt = modbusTcp->WriteString("30001", u8"ä½ å¥½ï¼Œä¸–ç•Œï¼ŒModbus-TCPå­—ç¬¦ä¸²æµ‹è¯•!");
 	rt.IsSuccess ? qDebug() << Qt::endl : qDebug() << rt.Message;
 
-	// ¶ÁÈ¡float
+	// è¯»å–float
 	auto floatValue = modbusTcp->ReadFloat("00001");
 	floatValue.IsSuccess ? qDebug() << floatValue.getContent0() : qDebug() << floatValue.Message;
-	// ¶ÁÈ¡int
+	// è¯»å–int
 	auto intValue = modbusTcp->ReadInt32("40001");
 	intValue.IsSuccess ? qDebug() << intValue.getContent0() : qDebug() << intValue.Message;
-	// ¶ÁÈ¡short
+	// è¯»å–short
 	auto shortValue = modbusTcp->ReadInt16("40004");
 	shortValue.IsSuccess ? qDebug() << shortValue.getContent0() : qDebug() << shortValue.Message;
-	// ¶ÁÈ¡short array
+	// è¯»å–short array
 	auto shortsValue = modbusTcp->ReadInt16("40004", 2);
 	shortsValue.IsSuccess ? qDebug() << shortsValue.getContent0() : qDebug() << shortsValue.Message;
-	// ¶ÁÈ¡bool array
+	// è¯»å–bool array
 	auto boolsValue = modbusTcp->ReadBool("41001", 12);
 	boolsValue.IsSuccess ? qDebug() << boolsValue.getContent0() : qDebug() << boolsValue.Message;
-	// ¶ÁÈ¡×Ö·û´®
+	// è¯»å–å­—ç¬¦ä¸²
 	auto strValue = modbusTcp->ReadString("30001", 20);
 	strValue.IsSuccess ? qDebug() << strValue.getContent0() : qDebug() << strValue.Message;
-#endif // Modbus-TCP²âÊÔ
+#endif // Modbus-TCPæµ‹è¯•
 
 #ifdef _WIN32
 	system("pause");
 #else
-	// macOS/Linux: µÈ´ıÓÃ»§°´»Ø³µ
+	// macOS/Linux: ç­‰å¾…ç”¨æˆ·æŒ‰å›è½¦
 	printf("Press Enter to continue...");
 	getchar();
 #endif

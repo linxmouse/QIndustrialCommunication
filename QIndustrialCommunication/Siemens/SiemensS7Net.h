@@ -15,7 +15,7 @@ class SiemensS7Net : public EthernetDevice
 	Q_PROPERTY(quint8 plcSlot READ getPlcSlot WRITE setPlcSlot)
 
 public:
-	explicit SiemensS7Net(SiemensPLCS siemens, const QString& ipAddr, QObject* parent = nullptr);
+	explicit SiemensS7Net(SiemensPLCS siemens, const QString &ipAddr, QObject *parent = nullptr);
 	~SiemensS7Net();
 
 #pragma region Properties Implement
@@ -38,11 +38,11 @@ public:
 #pragma endregion
 
 protected:
-	QICResult<> InitializationOnConnect(QTcpSocket* socket) override;
-	QICResult<> ReleaseOnDisconnect(QTcpSocket* socket) override;
+	QICResult<> InitializationOnConnect(QTcpSocket *socket) override;
+	QICResult<> ReleaseOnDisconnect(QTcpSocket *socket) override;
 
 private:
-	void Initializetion(SiemensPLCS siemens, const QString& ipAddr);
+	void Initializetion(SiemensPLCS siemens, const QString &ipAddr);
 	QICResult<> checkStartResult(QByteArray content);
 	QICResult<> checkStopResult(QByteArray content);
 	/**
@@ -50,13 +50,13 @@ private:
 	 * @param addresses 需要读取的S7Address对象列表
 	 * @return 包含读取结果的QICResult对象，成功则返回读取到的字节数组，失败则返回失败原因
 	 */
-	QICResult<QByteArray> Read(const QVector<S7Address>& addresses);
+	QICResult<QByteArray> Read(const QVector<S7Address> &addresses);
 	/**
 	 * @brief 向PLC写入数据
 	 * @param bytes 数据内容
 	 * @return 包含是否请求成功的QICResult对象，失败则返回失败原因
 	 */
-	QICResult<> WritePLC(const QByteArray& bytes);
+	QICResult<> WritePLC(const QByteArray &bytes);
 
 public:
 	QICResult<QString> ReadOrderNumber();
@@ -67,62 +67,62 @@ public:
 	// 让基类中名为 Write 的所有函数在派生类中都是可见的，与派生类自己定义的 Write 函数重载（Overload），而不是被隐藏（Hide）
 	using EthernetDevice::Write;
 
-	QICResult<bool> ReadBool(const QString& address) override;
-	QICResult<QByteArray> Read(const QString& address, ushort length) override;
+	QICResult<bool> ReadBool(const QString &address) override;
+	QICResult<QByteArray> Read(const QString &address, ushort length) override;
 	/**
 	 * @brief 读取指定地址列表的内容
 	 * @param addresses 需要读取的PLC地址列表
 	 * @param length 对应每个地址的读取长度
 	 * @return 包含读取结果的QICResult对象，成功则返回读取到的字节数组，失败则返回失败原因
 	 */
-	QICResult<QByteArray> Read(const QStringList& addresses, const QVector<quint16>& length);
+	QICResult<QByteArray> Read(const QStringList &addresses, const QVector<quint16> &length);
 	/**
 	 * @brief 写入数据到S7地址
 	 * @param address S7地址
 	 * @param value 数据
 	 * @return 包含是否写入成功的QICResult对象，失败则返回失败原因
 	 */
-	QICResult<> Write(const QString& address, const QByteArray& value) override;
+	QICResult<> Write(const QString &address, const QByteArray &value) override;
 	/**
 	 * @brief 写入位到S7地址
 	 * @param address S7地址
 	 * @param value 位值
 	 * @return 包含是否写入成功的QICResult对象，失败则返回失败原因
 	 */
-	QICResult<> Write(const QString& address, bool value) override;
+	QICResult<> Write(const QString &address, bool value) override;
 	/**
 	 * @brief 写入多个位到S7地址
 	 * @param address S7地址
 	 * @param values 位值数组
 	 * @return 包含是否写入成功的QICResult对象，失败则返回失败原因
 	 */
-	QICResult<> Write(const QString& address, const QVector<bool>& values);
+	QICResult<> Write(const QString &address, const QVector<bool> &values) override;
 	/**
 	 * @brief 构建用于读取多个S7地址的请求数据包
 	 * @param addresses 需要读取的S7地址列表
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> BuildReadRequest(const QVector<S7Address>& addresses);
+	static QICResult<QByteArray> BuildReadRequest(const QVector<S7Address> &addresses);
 	/**
 	 * @brief 构建用于读取比特的请求数据包
 	 * @param address 要读取的S7地址
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> BuildReadBoolRequest(const QString& address);
+	static QICResult<QByteArray> BuildReadBoolRequest(const QString &address);
 	/**
 	 * @brief 构建用于写入S7地址的请求数据包
 	 * @param address 要写入的S7地址
 	 * @param data 要写入的数据
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> BuildWriteRequest(const S7Address& address, const QByteArray& data);
+	static QICResult<QByteArray> BuildWriteRequest(const S7Address &address, const QByteArray &data);
 	/**
 	 * @brief 构建用于写入比特的请求数据包
 	 * @param address 要写入的S7地址
 	 * @param data 要写入的bool值
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> BuildWriteBitRequest(const QString& address, bool value);
+	static QICResult<QByteArray> BuildWriteBitRequest(const QString &address, bool value);
 
 private:
 	/**
@@ -131,27 +131,28 @@ private:
 	 * @param content 返回的字节数据
 	 * @return 包含解析结果的QICResult对象，成功则返回解析后的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> ParseReadResponse(const QVector<S7Address>& addresses, const QByteArray& content);
+	static QICResult<QByteArray> ParseReadResponse(const QVector<S7Address> &addresses, const QByteArray &content);
 	/**
 	 * @brief 解析从PLC返回的读取字节数据
 	 * @param address 要读取的S7地址
 	 * @return 包含请求数据包的QICResult对象，成功则返回请求的字节数组，失败则返回失败原因
 	 */
-	static QICResult<QByteArray> ParseReadBoolResponse(const QByteArray& content);
+	static QICResult<QByteArray> ParseReadBoolResponse(const QByteArray &content);
 	/**
 	 * @brief 解析从PLC返回的数据，从而判断写入是否成功
 	 * @param content 从PLC返回的数据
 	 * @return 包含是否请求成功的QICResult对象，失败则返回失败原因
 	 */
-	static QICResult<> ParseWriteResponse(const QByteArray& content);
+	static QICResult<> ParseWriteResponse(const QByteArray &content);
 	/**
 	 * @brief 将QVector<bool>转换为QByteArray
 	 * @param ba 布尔数组的值
 	 * @return 转换后的结果
 	 */
-	QByteArray BoolListToByteArray(const QVector<bool>& values)
+	QByteArray BoolListToByteArray(const QVector<bool> &values)
 	{
-		if (values.isEmpty()) return QByteArray();
+		if (values.isEmpty())
+			return QByteArray();
 		int size = qCeil(values.size() / 8.0);
 		QByteArray bytes(size, 0);
 		for (int i = 0; i < values.size(); i++)
@@ -174,11 +175,13 @@ private:
 	 * @param length 结果数组的长度
 	 * @return 转换后的结果
 	 */
-	QVector<bool> ByteArrayToBoolVector(const QByteArray& bytes, ushort length)
+	QVector<bool> ByteArrayToBoolVector(const QByteArray &bytes, ushort length)
 	{
-		if (bytes.isEmpty()) return QVector<bool>();
+		if (bytes.isEmpty())
+			return QVector<bool>();
 		QVector<bool> result;
-		for (int i = 0; i < length; i++) result.append((bytes[i / 8] & (1 << (i % 8))) != 0);
+		for (int i = 0; i < length; i++)
+			result.append((bytes[i / 8] & (1 << (i % 8))) != 0);
 		return result;
 	}
 

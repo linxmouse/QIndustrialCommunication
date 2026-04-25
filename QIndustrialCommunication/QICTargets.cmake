@@ -54,11 +54,11 @@ set_target_properties(QIC::QIC PROPERTIES
   INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:Qt6::Core>;\$<LINK_ONLY:Qt6::Network>;\$<LINK_ONLY:Qt6::Core5Compat>"
 )
 
-# Import target "QIC::QIC" for configuration ""
-set_property(TARGET QIC::QIC APPEND PROPERTY IMPORTED_CONFIGURATIONS NOCONFIG)
+# Import target "QIC::QIC" for configuration "Debug"
+set_property(TARGET QIC::QIC APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 set_target_properties(QIC::QIC PROPERTIES
-  IMPORTED_LINK_INTERFACE_LANGUAGES_NOCONFIG "CXX"
-  IMPORTED_LOCATION_NOCONFIG "/Volumes/MacAPFS/MyGithub/QIndustrialCommunication/out/QIndustrialCommunication/libQIC.a"
+  IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "CXX"
+  IMPORTED_LOCATION_DEBUG "/Volumes/MacAPFS/MyGithub/QIndustrialCommunication/out/build/macos-debug/QIndustrialCommunication/libQIC.a"
   )
 
 # This file does not depend on other imported targets which have

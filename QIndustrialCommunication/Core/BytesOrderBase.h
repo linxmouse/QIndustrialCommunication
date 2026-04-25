@@ -54,9 +54,9 @@ public:
 		QVector<bool> result;
 		// 获取子数组
 		QByteArray subArray = buffer.mid(index, length);
-		QBitArray bits(subArray.count() * 8);
+		QBitArray bits(subArray.size() * 8);
 		// 转换每个字节到位数组
-		for (int i = 0; i < subArray.count(); ++i)
+		for (int i = 0; i < subArray.size(); ++i)
 		{
 			for (int b = 0; b < 8; ++b)
 			{
