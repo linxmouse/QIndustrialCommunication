@@ -4,25 +4,31 @@
 class BytesOrderHelper
 {
 public:
-	static bool isLittleEndian() {
+	static bool isLittleEndian()
+	{
 		return QSysInfo::ByteOrder == QSysInfo::LittleEndian;
 	}
 
-	static bool isBigEndian() {
+	static bool isBigEndian()
+	{
 		return QSysInfo::ByteOrder == QSysInfo::BigEndian;
 	}
 
-	template<typename T>
-	static T toNetworkOrder(T value) {
-		if (isLittleEndian()) return qToBigEndian(value);
-		// 如果已经是大端，无需转换
+	template <typename T>
+	static T toNetworkOrder(T value)
+	{
+		if (isLittleEndian())
+			return qToBigEndian(value);
+		// 濡傛灉宸茬粡鏄ぇ绔紝鏃犻渶杞崲
 		return value;
 	}
 
-	template<typename T>
-	static T fromNetworkOrder(T value) {
-		if (isLittleEndian()) return qFromBigEndian(value);
-		// 如果已经是大端，无需转换
+	template <typename T>
+	static T fromNetworkOrder(T value)
+	{
+		if (isLittleEndian())
+			return qFromBigEndian(value);
+		// 濡傛灉宸茬粡鏄ぇ绔紝鏃犻渶杞崲
 		return value;
 	}
 };

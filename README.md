@@ -1,4 +1,4 @@
-﻿# Qt Industrial Communication Library
+# Qt Industrial Communication Library
 
 [中文](README_zh.md) | English
 

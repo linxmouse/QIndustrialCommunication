@@ -2,7 +2,7 @@
 
 #include "QICResult.h"
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#include <QtCore5Compat/QRegExp> // Qt6: QRegExp ÒÆÈë Core5Compat Ä£¿é
+#include <QtCore5Compat/QRegExp> // Qt6: QRegExp ç§»å…¥ Core5Compat æ¨¡å—
 #else
 #include <QRegExp> // Qt5
 #endif
@@ -19,7 +19,7 @@ public:
 	{
 		try
 		{
-			// Ê×Î»±ØĞëÊÇ0-4
+			// é¦–ä½å¿…é¡»æ˜¯0-4
 			QRegExp reg("^([0-4])(\\d{4})$");
 			if (!reg.exactMatch(address))
 			{
@@ -28,18 +28,18 @@ public:
 				else
 					return QICResult<ModbusAddress>::CreateFailedResult("Invalid address format, Must be 5 digits (e.g. 40000)");
 			}
-			// ½âÎöµØÖ·
+			// è§£æåœ°å€
 			quint16 addr = address.toUShort();
-			// ÌáÈ¡µØÖ·²¿·Ö
+			// æå–åœ°å€éƒ¨åˆ†
 			quint16 partAddr = reg.cap(2).toUShort();
 			if (isOneBaseAddress)
 			{
 				if (partAddr < 1)
 					return QICResult<ModbusAddress>::CreateFailedResult("Invalid address value (e.g. 40001)");
-				// ×ª»»ÎªµØÖ·´Ó0¿ªÊ¼
+				// è½¬æ¢ä¸ºåœ°å€ä»0å¼€å§‹
 				addr -= 1;
 			}
-			// 0x01 - ÏßÈ¦ | 0x02 - ÀëÉ¢ÊäÈë | 0x04 - ÊäÈë¼Ä´æÆ÷ | 0x03 - ±£³Ö¼Ä´æÆ÷
+			// 0x01 - çº¿åœˆ | 0x02 - ç¦»æ•£è¾“å…¥ | 0x04 - è¾“å…¥å¯„å­˜å™¨ | 0x03 - ä¿æŒå¯„å­˜å™¨
 			QVector<quint8> functions = {
 				READ_DISCRETE_INPUT,
 				READ_HOLDING_REGISTER,
@@ -67,21 +67,21 @@ public:
 	quint16 address;
 	quint8 functionCode;
 	quint8 station;
-	// true - µØÖ·´Ó1¿ªÊ¼(Ğ­ÒéµØÖ·×Ô¶¯-1)
+	// true - åœ°å€ä»1å¼€å§‹(åè®®åœ°å€è‡ªåŠ¨-1)
 	bool isOneBaseAddress;
 
-	// ¶ÁÈ¡ÀëÉ¢Á¿ÊäÈë
+	// è¯»å–ç¦»æ•£é‡è¾“å…¥
 	static const quint8 READ_DISCRETE_INPUT = 0x01;
-	// ¶ÁÈ¡±£³Ö¼Ä´æÆ÷
+	// è¯»å–ä¿æŒå¯„å­˜å™¨
 	static const quint8 READ_HOLDING_REGISTER = 0x03;
-	// ¶ÁÈ¡ÊäÈë¼Ä´æÆ÷
+	// è¯»å–è¾“å…¥å¯„å­˜å™¨
 	static const quint8 READ_INPUT_REGISTER = 0x04;
-	// Ğ´µ¥¸öÏßÈ¦
+	// å†™å•ä¸ªçº¿åœˆ
 	static const quint8 WRITE_SINGLE_COIL = 0x05;
-	// Ğ´µ¥¸ö¼Ä´æÆ÷
+	// å†™å•ä¸ªå¯„å­˜å™¨
 	static const quint8 WRITE_SINGLE_REGISTER = 0x06;
-	// Ğ´¶à¸öÏßÈ¦
+	// å†™å¤šä¸ªçº¿åœˆ
 	static const quint8 WRITE_MULTIPLE_COIL = 0x0f;
-	// Ğ´¶à¸öÏßÈ¦
+	// å†™å¤šä¸ªçº¿åœˆ
 	static const quint8 WRITE_MULTIPLE_REGISTER = 0x10;
 };

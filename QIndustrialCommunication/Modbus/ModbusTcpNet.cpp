@@ -24,25 +24,25 @@ QICResult<> ModbusTcpNet::ReleaseOnDisconnect(QTcpSocket *socket)
 
 QICResult<QByteArray> ModbusTcpNet::Read(const QString &address, ushort length)
 {
-	// ¹¹½¨ÇëÇó
+	// æ„å»ºè¯·æ±‚
 	auto buildResult = BuildReadRequest(address, length);
 	if (!buildResult.IsSuccess)
 		return buildResult;
-	// ·¢ËÍÇëÇó
+	// å‘é€è¯·æ±‚
 	auto response = ReadFromSocket(buildResult.getContent0());
 	if (!response.IsSuccess)
 		return response;
-	// ½âÎöÏìÓ¦
+	// è§£æå“åº”
 	return ParseReadResponse(response.getContent0());
 }
 
 QICResult<> ModbusTcpNet::Write(const QString &address, const QByteArray &value)
 {
-	// ¹¹½¨ÇëÇó
+	// æ„å»ºè¯·æ±‚
 	auto buildResult = BuildWriteRequest(address, value);
 	if (!buildResult.IsSuccess)
 		return QICResult<>::CreateFailedResult(buildResult);
-	// ·¢ËÍÇëÇó²¢½âÎöÏìÓ¦
+	// å‘é€è¯·æ±‚å¹¶è§£æå“åº”
 	auto response = ReadFromSocket(buildResult.getContent0());
 	if (!response.IsSuccess)
 		return QICResult<>::CreateFailedResult(response);
@@ -51,11 +51,11 @@ QICResult<> ModbusTcpNet::Write(const QString &address, const QByteArray &value)
 
 QICResult<> ModbusTcpNet::Write(const QString &address, const QVector<bool> &values)
 {
-	// ¹¹½¨ÇëÇó
+	// æ„å»ºè¯·æ±‚
 	auto buildResult = BuildWriteBoolRequest(address, values);
 	if (!buildResult.IsSuccess)
 		return QICResult<>::CreateFailedResult(buildResult);
-	// ·¢ËÍÇëÇó²¢½âÎöÏìÓ¦
+	// å‘é€è¯·æ±‚å¹¶è§£æå“åº”
 	auto response = ReadFromSocket(buildResult.getContent0());
 	if (!response.IsSuccess)
 		return QICResult<>::CreateFailedResult(response);
@@ -64,15 +64,15 @@ QICResult<> ModbusTcpNet::Write(const QString &address, const QVector<bool> &val
 
 QICResult<QVector<bool>> ModbusTcpNet::ReadBool(const QString &address, ushort length)
 {
-	// ¹¹½¨ÇëÇó
+	// æ„å»ºè¯·æ±‚
 	auto buildResult = BuildReadBoolRequest(address, length);
 	if (!buildResult.IsSuccess)
 		return QICResult<QVector<bool>>::CreateFailedResult(buildResult);
-	// ·¢ËÍÇëÇó
+	// å‘é€è¯·æ±‚
 	auto response = ReadFromSocket(buildResult.getContent0());
 	if (!response.IsSuccess)
 		return QICResult<QVector<bool>>::CreateFailedResult(response);
-	// ½âÎöÏìÓ¦
+	// è§£æå“åº”
 	auto parsedData = ParseReadBoolResponse(response.getContent0());
 	if (!parsedData.IsSuccess)
 		return QICResult<QVector<bool>>::CreateFailedResult(parsedData);
@@ -83,32 +83,32 @@ QICResult<QVector<bool>> ModbusTcpNet::ReadBool(const QString &address, ushort l
 
 QICResult<QByteArray> ModbusTcpNet::BuildReadRequest(const QString &address, ushort length)
 {
-	// µØÖ·½âÎö
+	// åœ°å€è§£æ
 	auto addr = ModbusAddress::ParseAddress(address, ModbusAddress::READ_HOLDING_REGISTER, getUnitId(), getIsOneBaseAddress());
 	if (!addr.IsSuccess)
 		return QICResult<QByteArray>::CreateFailedResult(addr);
-	// ¹¹½¨PDU:¹¦ÄÜÂë(1)+µØÖ·(2)+×Ö½Ú³¤¶È(2)
+	// æ„å»ºPDU:åŠŸèƒ½ç (1)+åœ°å€(2)+å­—èŠ‚é•¿åº¦(2)
 	QByteArray pdu;
 	QDataStream stream(&pdu, QIODevice::WriteOnly);
 	stream.setByteOrder(QDataStream::BigEndian);
 	stream << static_cast<quint8>(addr.getContent0().functionCode)
 		   << addr.getContent0().address
 		   << length;
-	// ¹¹½¨ÍêÕû±¨ÎÄ
+	// æ„å»ºå®Œæ•´æŠ¥æ–‡
 	QByteArray header = BuildMBAPHeader(pdu.size());
 	return QICResult<QByteArray>::CreateSuccessResult(header + pdu);
 }
 
 QICResult<QByteArray> ModbusTcpNet::ParseReadResponse(const QByteArray &response)
 {
-	// »ù´¡Ğ£Ñé
+	// åŸºç¡€æ ¡éªŒ
 	if (response.size() < 9)
 		return QICResult<QByteArray>::CreateFailedResult("Invalid response length");
-	// Ğ£Ñé¹¦ÄÜÂë:¼ì²é¹¦ÄÜÂëÊÇ·ñ´øÓĞÒì³£±êÖ¾(¸ßÎ»Îª1)
+	// æ ¡éªŒåŠŸèƒ½ç :æ£€æŸ¥åŠŸèƒ½ç æ˜¯å¦å¸¦æœ‰å¼‚å¸¸æ ‡å¿—(é«˜ä½ä¸º1)
 	quint8 functionCode = static_cast<quint8>(response[7]);
 	if (functionCode & 0x80)
 		return QICResult<QByteArray>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(static_cast<quint8>(response[8]), 2, 16, QChar('0')));
-	// ÌáÈ¡ÓĞĞ§ÔØºÉ: FunctionCode(1) | DataLength(1) | Data(variable)
+	// æå–æœ‰æ•ˆè½½è·: FunctionCode(1) | DataLength(1) | Data(variable)
 	quint8 dataLenth = static_cast<quint8>(response[8]);
 	auto responseData = response.mid(9, dataLenth);
 	return QICResult<QByteArray>::CreateSuccessResult(responseData);
@@ -116,32 +116,32 @@ QICResult<QByteArray> ModbusTcpNet::ParseReadResponse(const QByteArray &response
 
 QICResult<QByteArray> ModbusTcpNet::BuildReadBoolRequest(const QString &address, ushort length)
 {
-	// µØÖ·½âÎö
+	// åœ°å€è§£æ
 	auto addr = ModbusAddress::ParseAddress(address, ModbusAddress::READ_DISCRETE_INPUT, getUnitId(), getIsOneBaseAddress());
 	if (!addr.IsSuccess)
 		return QICResult<QByteArray>::CreateFailedResult(addr);
-	// ¹¹½¨PDU:¹¦ÄÜÂë(1)+µØÖ·(2)+Î»³¤¶È(2)
+	// æ„å»ºPDU:åŠŸèƒ½ç (1)+åœ°å€(2)+ä½é•¿åº¦(2)
 	QByteArray pdu;
 	QDataStream stream(&pdu, QIODevice::WriteOnly);
 	stream.setByteOrder(QDataStream::BigEndian);
 	stream << addr.getContent0().functionCode
 		   << addr.getContent0().address
 		   << length;
-	// ¹¹½¨ÍêÕû±¨ÎÄ
+	// æ„å»ºå®Œæ•´æŠ¥æ–‡
 	QByteArray header = BuildMBAPHeader(pdu.size());
 	return QICResult<QByteArray>::CreateSuccessResult(header + pdu);
 }
 
 QICResult<QByteArray> ModbusTcpNet::ParseReadBoolResponse(const QByteArray &response)
 {
-	// »ù´¡Ğ£Ñé
+	// åŸºç¡€æ ¡éªŒ
 	if (response.size() < 9)
 		return QICResult<QByteArray>::CreateFailedResult("Invalid response length");
-	// Ğ£Ñé¹¦ÄÜÂë:¼ì²é¹¦ÄÜÂëÊÇ·ñ´øÓĞÒì³£±êÖ¾(¸ßÎ»Îª1)
+	// æ ¡éªŒåŠŸèƒ½ç :æ£€æŸ¥åŠŸèƒ½ç æ˜¯å¦å¸¦æœ‰å¼‚å¸¸æ ‡å¿—(é«˜ä½ä¸º1)
 	quint8 functionCode = static_cast<quint8>(response[7]);
 	if (functionCode & 0x80)
 		return QICResult<QByteArray>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(static_cast<quint8>(response[8]), 2, 16, QChar('0')));
-	// ÌáÈ¡ÓĞĞ§ÔØºÉ: FunctionCode(1) | DataLength(1) | Data(variable)
+	// æå–æœ‰æ•ˆè½½è·: FunctionCode(1) | DataLength(1) | Data(variable)
 	quint8 dataLength = static_cast<quint8>(response[8]);
 	auto responseData = response.mid(9, dataLength);
 	return QICResult<QByteArray>::CreateSuccessResult(responseData);
@@ -149,40 +149,40 @@ QICResult<QByteArray> ModbusTcpNet::ParseReadBoolResponse(const QByteArray &resp
 
 QICResult<QByteArray> ModbusTcpNet::BuildWriteRequest(const QString &address, const QByteArray &value)
 {
-	// ¸ù¾İÊı¾İ³¤¶ÈÈ·¶¨¹¦ÄÜÂë
+	// æ ¹æ®æ•°æ®é•¿åº¦ç¡®å®šåŠŸèƒ½ç 
 	quint8 functionCode = (value.size() == 2) ? ModbusAddress::WRITE_SINGLE_REGISTER : ModbusAddress::WRITE_MULTIPLE_REGISTER;
 	auto addr = ModbusAddress::ParseAddress(address, functionCode, getUnitId(), getIsOneBaseAddress());
 	if (!addr.IsSuccess)
 		return QICResult<QByteArray>::CreateFailedResult(addr);
-	// ¹¹½¨PDU
-	// WRITE_SINGLE_REGISTER:	¹¦ÄÜÂë(1)+µØÖ·(2)+Data(variable)
-	// WRITE_MULTIPLE_REGISTER:	¹¦ÄÜÂë(1)+ÆğÊ¼µØÖ·(2)+¼Ä´æÆ÷Êı(2)+×Ö½Ú³¤¶È(1)+Data(variable)
+	// æ„å»ºPDU
+	// WRITE_SINGLE_REGISTER:	åŠŸèƒ½ç (1)+åœ°å€(2)+Data(variable)
+	// WRITE_MULTIPLE_REGISTER:	åŠŸèƒ½ç (1)+èµ·å§‹åœ°å€(2)+å¯„å­˜å™¨æ•°(2)+å­—èŠ‚é•¿åº¦(1)+Data(variable)
 	QByteArray pdu;
 	QDataStream stream(&pdu, QIODevice::WriteOnly);
 	stream.setByteOrder(QDataStream::BigEndian);
 	stream << functionCode << addr.getContent0().address;
 	if (functionCode == ModbusAddress::WRITE_MULTIPLE_REGISTER)
 	{
-		// Ã¿¸ö¼Ä´æÆ÷Õ¼ÓÃ2×Ö½Ú
+		// æ¯ä¸ªå¯„å­˜å™¨å ç”¨2å­—èŠ‚
 		stream << static_cast<quint16>(value.size() / 2)
 			   << static_cast<quint8>(value.size());
 	}
 	pdu.append(value);
-	// ¹¹½¨ÍêÕû±¨ÎÄ
+	// æ„å»ºå®Œæ•´æŠ¥æ–‡
 	QByteArray header = BuildMBAPHeader(pdu.size());
 	return QICResult<QByteArray>::CreateSuccessResult(header + pdu);
 }
 
 QICResult<> ModbusTcpNet::ParseWriteResponse(const QByteArray &response)
 {
-	// MBAP(7)+¹¦ÄÜÂë(1)+µØÖ·(2)+Öµ(2)
+	// MBAP(7)+åŠŸèƒ½ç (1)+åœ°å€(2)+å€¼(2)
 	if (response.size() < 12)
 		return QICResult<>::CreateFailedResult("Invalid response length");
-	// Ğ£Ñé¹¦ÄÜÂë:¼ì²é¹¦ÄÜÂëÊÇ·ñ´øÓĞÒì³£±êÖ¾(¸ßÎ»Îª1)
+	// æ ¡éªŒåŠŸèƒ½ç :æ£€æŸ¥åŠŸèƒ½ç æ˜¯å¦å¸¦æœ‰å¼‚å¸¸æ ‡å¿—(é«˜ä½ä¸º1)
 	quint8 functionCode = static_cast<quint8>(response[7]);
 	if (functionCode & 0x80)
 		return QICResult<>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(static_cast<quint8>(response[8]), 2, 16, QChar('0')));
-	// ÑéÖ¤¹¦ÄÜÂëÊÇ·ñÆ¥Åä
+	// éªŒè¯åŠŸèƒ½ç æ˜¯å¦åŒ¹é…
 	if (functionCode != ModbusAddress::WRITE_SINGLE_REGISTER && functionCode != ModbusAddress::WRITE_MULTIPLE_REGISTER)
 		return QICResult<>::CreateFailedResult("Function code mismath");
 	return QICResult<>::CreateSuccessResult();
@@ -190,14 +190,14 @@ QICResult<> ModbusTcpNet::ParseWriteResponse(const QByteArray &response)
 
 QICResult<QByteArray> ModbusTcpNet::BuildWriteBoolRequest(const QString &address, const QVector<bool> &values)
 {
-	// ¸ù¾İÏßÈ¦ÊıÁ¿×Ô¶¯ÅĞ¶Ï¹¦ÄÜÂë
+	// æ ¹æ®çº¿åœˆæ•°é‡è‡ªåŠ¨åˆ¤æ–­åŠŸèƒ½ç 
 	quint8 functionCode = (values.size() == 1) ? ModbusAddress::WRITE_SINGLE_COIL : ModbusAddress::WRITE_MULTIPLE_COIL;
 	auto addr = ModbusAddress::ParseAddress(address, functionCode, getUnitId(), getIsOneBaseAddress());
 	if (!addr.IsSuccess)
 		return QICResult<QByteArray>::CreateFailedResult(addr);
-	// ¹¹½¨PDU
-	// WRITE_SINGLE_COIL:¹¦ÄÜÂë(1)+µØÖ·(2)+Data(2)
-	// WRITE_MULTIPLE_COIL:¹¦ÄÜÂë(1)+µØÖ·(2)+ÏßÈ¦Êı(2)+×Ö½Ú³¤¶È(1)+Data(variable)
+	// æ„å»ºPDU
+	// WRITE_SINGLE_COIL:åŠŸèƒ½ç (1)+åœ°å€(2)+Data(2)
+	// WRITE_MULTIPLE_COIL:åŠŸèƒ½ç (1)+åœ°å€(2)+çº¿åœˆæ•°(2)+å­—èŠ‚é•¿åº¦(1)+Data(variable)
 	QByteArray pdu;
 	QDataStream stream(&pdu, QIODevice::WriteOnly);
 	stream.setByteOrder(QDataStream::BigEndian);
@@ -217,21 +217,21 @@ QICResult<QByteArray> ModbusTcpNet::BuildWriteBoolRequest(const QString &address
 	}
 	else
 		QICResult<QByteArray>::CreateFailedResult("Invalid functiion code");
-	// ¹¹½¨ÍêÕû±¨ÎÄ
+	// æ„å»ºå®Œæ•´æŠ¥æ–‡
 	QByteArray header = BuildMBAPHeader(pdu.size());
 	return QICResult<QByteArray>::CreateSuccessResult(header + pdu);
 }
 
 QICResult<> ModbusTcpNet::ParseWriteBoolResponse(const QByteArray &response)
 {
-	// MBAP(7)+¹¦ÄÜÂë(1)+µØÖ·(2)+Öµ(2)
+	// MBAP(7)+åŠŸèƒ½ç (1)+åœ°å€(2)+å€¼(2)
 	if (response.size() < 12)
 		return QICResult<>::CreateFailedResult("Invalid response length");
-	// Ğ£Ñé¹¦ÄÜÂë:¼ì²é¹¦ÄÜÂëÊÇ·ñ´øÓĞÒì³£±êÖ¾(¸ßÎ»Îª1)
+	// æ ¡éªŒåŠŸèƒ½ç :æ£€æŸ¥åŠŸèƒ½ç æ˜¯å¦å¸¦æœ‰å¼‚å¸¸æ ‡å¿—(é«˜ä½ä¸º1)
 	quint8 functionCode = static_cast<quint8>(response[7]);
 	if (functionCode & 0x80)
 		return QICResult<>::CreateFailedResult(QString("Modbus exception code: 0x%1").arg(static_cast<quint8>(response[8]), 2, 16, QChar('0')));
-	// ÑéÖ¤¹¦ÄÜÂëÊÇ·ñÆ¥Åä
+	// éªŒè¯åŠŸèƒ½ç æ˜¯å¦åŒ¹é…
 	if (functionCode != ModbusAddress::WRITE_SINGLE_COIL && functionCode != ModbusAddress::WRITE_MULTIPLE_COIL)
 		return QICResult<>::CreateFailedResult("Function code mismath");
 	return QICResult<>::CreateSuccessResult();

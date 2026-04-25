@@ -5,7 +5,7 @@
 #include <QDataStream>
 #include <QVector>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#include <QtCore5Compat/QTextCodec> // Qt6: QTextCodec ÒÆÈë Core5Compat Ä£¿é
+#include <QtCore5Compat/QTextCodec> // Qt6: QTextCodec ç§»å…¥ Core5Compat æ¨¡å—
 #else
 #include <QTextCodec> // Qt5
 #endif
@@ -52,7 +52,7 @@ public:
 
 	virtual QICResult<QVector<short>> ReadInt16(QString address, ushort length)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 
 		auto result = Read(address, length * WordsPerAddress);
 		if (!result.IsSuccess)
@@ -70,7 +70,7 @@ public:
 	}
 	QICResult<short> ReadInt16(const QString &address)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = ReadInt16(address, 1);
 		if (!result.IsSuccess)
 			return QICResult<short>::CreateFailedResult(result);
@@ -84,7 +84,7 @@ public:
 
 	virtual QICResult<QVector<ushort>> ReadUInt16(const QString &address, ushort length)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = Read(address, length * WordsPerAddress);
 		if (!result.IsSuccess)
 			return QICResult<QVector<ushort>>::CreateFailedResult(result);
@@ -101,7 +101,7 @@ public:
 	}
 	QICResult<ushort> ReadUInt16(const QString &address)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = ReadUInt16(address, 1);
 		if (!result.IsSuccess)
 			return QICResult<ushort>::CreateFailedResult(result);
@@ -115,7 +115,7 @@ public:
 
 	virtual QICResult<QVector<int>> ReadInt32(const QString &address, ushort length)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = Read(address, length * WordsPerAddress * 2);
 		if (!result.IsSuccess)
 			return QICResult<QVector<int>>::CreateFailedResult(result);
@@ -132,7 +132,7 @@ public:
 	}
 	QICResult<int> ReadInt32(const QString &address)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = ReadInt32(address, 1);
 		if (!result.IsSuccess)
 			return QICResult<int>::CreateFailedResult(result);
@@ -148,7 +148,7 @@ public:
 
 	virtual QICResult<QVector<uint>> ReadUInt32(const QString &address, ushort length)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = Read(address, length * WordsPerAddress * 2);
 		if (!result.IsSuccess)
 			return QICResult<QVector<uint>>::CreateFailedResult(result);
@@ -165,7 +165,7 @@ public:
 	}
 	QICResult<uint> ReadUInt32(const QString &address)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = ReadUInt32(address, 1);
 		if (!result.IsSuccess)
 			return QICResult<uint>::CreateFailedResult(result);
@@ -178,7 +178,7 @@ public:
 
 	virtual QICResult<QVector<float>> ReadFloat(const QString &address, ushort length)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = Read(address, length * WordsPerAddress * 2);
 		if (!result.IsSuccess)
 			return QICResult<QVector<float>>::CreateFailedResult(result);
@@ -195,7 +195,7 @@ public:
 	}
 	QICResult<float> ReadFloat(const QString &address)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = ReadFloat(address, 1);
 		if (!result.IsSuccess)
 			return QICResult<float>::CreateFailedResult(result);
@@ -208,7 +208,7 @@ public:
 
 	virtual QICResult<QVector<qint64>> ReadInt64(const QString &address, ushort length)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = Read(address, length * WordsPerAddress * 4);
 		if (!result.IsSuccess)
 			return QICResult<QVector<qint64>>::CreateFailedResult(result);
@@ -225,7 +225,7 @@ public:
 	}
 	QICResult<qint64> ReadInt64(const QString &address)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = ReadInt64(address, 1);
 		if (!result.IsSuccess)
 			return QICResult<qint64>::CreateFailedResult(result);
@@ -238,7 +238,7 @@ public:
 
 	virtual QICResult<QVector<quint64>> ReadUInt64(const QString &address, ushort length)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = Read(address, length * WordsPerAddress * 4);
 		if (!result.IsSuccess)
 			return QICResult<QVector<quint64>>::CreateFailedResult(result);
@@ -255,7 +255,7 @@ public:
 	}
 	QICResult<quint64> ReadUInt64(const QString &address)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = ReadUInt64(address, 1);
 		if (!result.IsSuccess)
 			return QICResult<quint64>::CreateFailedResult(result);
@@ -268,7 +268,7 @@ public:
 
 	virtual QICResult<QVector<double>> ReadDouble(const QString &address, ushort length)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = Read(address, length * WordsPerAddress * 4);
 		if (!result.IsSuccess)
 			return QICResult<QVector<double>>::CreateFailedResult(result);
@@ -285,7 +285,7 @@ public:
 	}
 	QICResult<double> ReadDouble(const QString &address)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = ReadDouble(address, 1);
 		if (!result.IsSuccess)
 			return QICResult<double>::CreateFailedResult(result);
@@ -298,7 +298,7 @@ public:
 
 	virtual QICResult<QString> ReadString(const QString &address, ushort length, QTextCodec *codec)
 	{
-#if 1 // ²»Ê¹ÓÃQICResultTranslator
+#if 1 // ä¸ä½¿ç”¨QICResultTranslator
 		auto result = Read(address, length);
 		if (!result.IsSuccess)
 			return QICResult<QString>::CreateFailedResult(result);
@@ -377,7 +377,7 @@ public:
 		auto bytes = BytesOrderPtr->PackByteArray(value, codec);
 		if (WordsPerAddress == 1)
 		{
-			// À©Õ¹µ½Å¼Êı³¤¶È
+			// æ‰©å±•åˆ°å¶æ•°é•¿åº¦
 			if (bytes.size() % 2 != 0)
 				bytes.append('\0');
 		}
@@ -389,7 +389,7 @@ public:
 		auto bytes = BytesOrderPtr->PackByteArray(value, codec);
 		if (WordsPerAddress == 1)
 		{
-			// À©Õ¹µ½Å¼Êı³¤¶È
+			// æ‰©å±•åˆ°å¶æ•°é•¿åº¦
 			if (bytes.size() % 2 != 0)
 				bytes.append('\0');
 		}
@@ -399,9 +399,9 @@ public:
 	QICResult<> WriteString(const QString &address, QString value, int length) { return WriteString(address, value, length, QTextCodec::codecForLocale()); }
 
 public:
-	// ÕâÀï±íÊ¾ÏàÓ¦µÄPLCµÄ1¸öÂß¼­µØÖ·ÓĞ¶àÉÙ¸öWord
-	// 1¸öÂß¼­µØÖ·=1¸öWord(2bytes), WordsPerAddress=1
-	// 1¸öÂß¼­µØÖ·=2¸öWord(4bytes), WordsPerAddress=2
+	// è¿™é‡Œè¡¨ç¤ºç›¸åº”çš„PLCçš„1ä¸ªé€»è¾‘åœ°å€æœ‰å¤šå°‘ä¸ªWord
+	// 1ä¸ªé€»è¾‘åœ°å€=1ä¸ªWord(2bytes), WordsPerAddress=1
+	// 1ä¸ªé€»è¾‘åœ°å€=2ä¸ªWord(4bytes), WordsPerAddress=2
 	ushort WordsPerAddress;
 	QScopedPointer<BytesOrderBase> BytesOrderPtr;
 };

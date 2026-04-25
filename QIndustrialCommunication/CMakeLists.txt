@@ -1,4 +1,4 @@
-﻿# 定义库版本信息
+# 定义库版本信息
 set(QIC_VERSION_MAJOR 1)
 set(QIC_VERSION_MINOR 0)
 set(QIC_VERSION_PATCH 0)
@@ -9,12 +9,16 @@ file(GLOB SRCS "*.cpp" "*.c")
 file(GLOB HEADERS "*.hpp" "*.h")
 
 # 获取Core目录下的源文件和头文件
-file(GLOB SRCS "Core/*.cpp" "Core/*.c")
-file(GLOB HEADERS "Core/*.hpp" "Core/*.h")
+file(GLOB CORE_SRCS "Core/*.cpp" "Core/*.c")
+file(GLOB CORE_HEADERS "Core/*.hpp" "Core/*.h")
+list(APPEND SRCS ${CORE_SRCS})
+list(APPEND HEADERS ${CORE_HEADERS})
 
 # 获取实验杂项目录下的源文件和头文件
-file(GLOB SRCS "Misc/*.cpp" "Misc/*.c")
-file(GLOB HEADERS "Misc/*.hpp" "Misc/*.h")
+file(GLOB MISC_SRCS "Misc/*.cpp" "Misc/*.c")
+file(GLOB MISC_HEADERS "Misc/*.hpp" "Misc/*.h")
+list(APPEND SRCS ${MISC_SRCS})
+list(APPEND HEADERS ${MISC_HEADERS})
 
 # 获取Keyence子目录下的源文件和头文件
 file(GLOB KEYENCE_SRCS "Keyence/*.cpp" "Keyence/*.cxx" "Keyence/*.c")
