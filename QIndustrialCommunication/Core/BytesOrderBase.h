@@ -10,6 +10,8 @@
 #else
 #include <QTextCodec> // Qt5
 #endif
+#include <cstring>
+#include <type_traits>
 #include <memory>
 #include <exception>
 #include "DataFormat.h"
@@ -80,9 +82,7 @@ public:
 	virtual short ConvertToInt16(const QByteArray &buffer, int index)
 	{
 		QByteArray fmtBuffer = ByteTransDataFormat2(buffer, index);
-		qint16 value = 0;
-		std::memcpy(&value, fmtBuffer.constData(), sizeof(value));
-		return value;
+		return FromLittleEndianBuffer<qint16>(fmtBuffer);
 	}
 	virtual QVector<qint16> ConvertToInt16(const QByteArray &buffer, int index, int length)
 	{
@@ -104,9 +104,7 @@ public:
 	virtual ushort ConvertToUInt16(const QByteArray &buffer, int index)
 	{
 		QByteArray fmtBuffer = ByteTransDataFormat2(buffer, index);
-		ushort value = 0;
-		std::memcpy(&value, fmtBuffer.constData(), sizeof(value));
-		return value;
+		return FromLittleEndianBuffer<ushort>(fmtBuffer);
 	}
 	virtual QVector<ushort> ConvertToUInt16(const QByteArray &buffer, int index, int lenght)
 	{
@@ -128,9 +126,7 @@ public:
 	virtual int ConvertToInt32(const QByteArray &buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat4(buffer, index);
-		int value = 0;
-		std::memcpy(&value, formattedBuffer.constData(), sizeof(value));
-		return value;
+		return FromLittleEndianBuffer<int>(formattedBuffer);
 	}
 	virtual QVector<int> ConvertToInt32(const QByteArray &buffer, int index, int length)
 	{
@@ -151,9 +147,7 @@ public:
 	virtual uint ConvertToUInt32(const QByteArray &buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat4(buffer, index);
-		uint value = 0;
-		std::memcpy(&value, formattedBuffer.constData(), sizeof(value));
-		return value;
+		return FromLittleEndianBuffer<uint>(formattedBuffer);
 	}
 	virtual QVector<uint> ConvertToUInt32(const QByteArray &buffer, int index, int length)
 	{
@@ -174,9 +168,7 @@ public:
 	virtual qint64 ConvertToInt64(const QByteArray &buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat8(buffer, index);
-		qint64 value = 0;
-		std::memcpy(&value, formattedBuffer.constData(), sizeof(value));
-		return value;
+		return FromLittleEndianBuffer<qint64>(formattedBuffer);
 	}
 	virtual QVector<qint64> ConvertToInt64(const QByteArray &buffer, int index, int length)
 	{
@@ -197,9 +189,7 @@ public:
 	virtual quint64 ConvertToUInt64(const QByteArray &buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat8(buffer, index);
-		qint64 value = 0;
-		std::memcpy(&value, formattedBuffer.constData(), sizeof(value));
-		return value;
+		return FromLittleEndianBuffer<quint64>(formattedBuffer);
 	}
 	virtual QVector<quint64> ConvertToUInt64(const QByteArray &buffer, int index, int length)
 	{
@@ -220,9 +210,7 @@ public:
 	virtual float ConvertToFloat(const QByteArray &buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat4(buffer, index);
-		float result = 0;
-		std::memcpy(&result, formattedBuffer.constData(), sizeof(float));
-		return result;
+		return FromLittleEndianFloat<float, quint32>(formattedBuffer);
 	}
 	virtual QVector<float> ConvertToFloat(const QByteArray &buffer, int index, int length)
 	{
@@ -243,9 +231,7 @@ public:
 	virtual double ConvertToDouble(const QByteArray &buffer, int index)
 	{
 		QByteArray formattedBuffer = ByteTransDataFormat8(buffer, index);
-		double result = 0;
-		std::memcpy(&result, formattedBuffer.constData(), sizeof(double));
-		return result;
+		return FromLittleEndianFloat<double, quint64>(formattedBuffer);
 	}
 	virtual QVector<double> ConvertToDouble(const QByteArray &buffer, int index, int length)
 	{
@@ -361,7 +347,7 @@ public:
 		QByteArray array;
 		for (const short &value : values)
 		{
-			QByteArray temp = ByteTransDataFormat2(QByteArray::fromRawData(reinterpret_cast<const char *>(&value), sizeof(short)));
+			QByteArray temp = ByteTransDataFormat2(ToLittleEndianBuffer(value));
 			array.append(temp);
 		}
 		return array;
@@ -375,7 +361,7 @@ public:
 		QByteArray array;
 		for (const ushort &value : values)
 		{
-			QByteArray temp = ByteTransDataFormat2(QByteArray::fromRawData(reinterpret_cast<const char *>(&value), sizeof(ushort)));
+			QByteArray temp = ByteTransDataFormat2(ToLittleEndianBuffer(value));
 			array.append(temp);
 		}
 		return array;
@@ -389,7 +375,7 @@ public:
 		QByteArray array;
 		for (const int &value : values)
 		{
-			QByteArray temp = ByteTransDataFormat4(QByteArray::fromRawData(reinterpret_cast<const char *>(&value), sizeof(int)));
+			QByteArray temp = ByteTransDataFormat4(ToLittleEndianBuffer(value));
 			array.append(temp);
 		}
 		return array;
@@ -403,7 +389,7 @@ public:
 		QByteArray array;
 		for (const uint &value : values)
 		{
-			QByteArray temp = ByteTransDataFormat4(QByteArray::fromRawData(reinterpret_cast<const char *>(&value), sizeof(uint)));
+			QByteArray temp = ByteTransDataFormat4(ToLittleEndianBuffer(value));
 			array.append(temp);
 		}
 		return array;
@@ -417,7 +403,7 @@ public:
 		QByteArray array;
 		for (const qint64 &value : values)
 		{
-			QByteArray temp = ByteTransDataFormat8(QByteArray::fromRawData(reinterpret_cast<const char *>(&value), sizeof(qint64)));
+			QByteArray temp = ByteTransDataFormat8(ToLittleEndianBuffer(value));
 			array.append(temp);
 		}
 		return array;
@@ -431,7 +417,7 @@ public:
 		QByteArray array;
 		for (const quint64 &value : values)
 		{
-			QByteArray temp = ByteTransDataFormat8(QByteArray::fromRawData(reinterpret_cast<const char *>(&value), sizeof(quint64)));
+			QByteArray temp = ByteTransDataFormat8(ToLittleEndianBuffer(value));
 			array.append(temp);
 		}
 		return array;
@@ -445,7 +431,7 @@ public:
 		QByteArray array;
 		for (const float &value : values)
 		{
-			QByteArray temp = ByteTransDataFormat4(QByteArray::fromRawData(reinterpret_cast<const char *>(&value), sizeof(float)));
+			QByteArray temp = ByteTransDataFormat4(ToLittleEndianFloatBuffer<float, quint32>(value));
 			array.append(temp);
 		}
 		return array;
@@ -459,7 +445,7 @@ public:
 		QByteArray array;
 		for (const double &value : values)
 		{
-			QByteArray temp = ByteTransDataFormat8(QByteArray::fromRawData(reinterpret_cast<const char *>(&value), sizeof(double)));
+			QByteArray temp = ByteTransDataFormat8(ToLittleEndianFloatBuffer<double, quint64>(value));
 			array.append(temp);
 		}
 		return array;
@@ -508,7 +494,11 @@ public:
 	{
 		BytesOrderBase converter(format);
 		// 将原始值转换为字节数组
-		QByteArray originalBytes = QByteArray::fromRawData(reinterpret_cast<const char *>(&originalValue), sizeof(T));
+		QByteArray originalBytes;
+		if (sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8)
+		{
+			originalBytes = converter.ToLittleEndianTestBuffer(originalValue);
+		}
 		// 第一次转换
 		QByteArray firstConvert;
 		if (sizeof(T) == 2)
@@ -526,8 +516,7 @@ public:
 		else if (sizeof(T) == 8)
 			secondConvert = converter.ByteTransDataFormat8(firstConvert);
 		// 比较原始值和二次转换后的值
-		T recoveredValue;
-		std::memcpy(&recoveredValue, secondConvert.constData(), sizeof(T));
+		T recoveredValue = converter.FromLittleEndianTestBuffer<T>(secondConvert);
 		qDebug() << "Original Format: " << format;
 		qDebug() << "Original Value:  " << QString::number(originalValue, 16).toUpper();
 		qDebug() << "Recovered Value: " << QString::number(recoveredValue, 16).toUpper();
@@ -665,6 +654,124 @@ protected:
 	}
 
 private:
+	/**
+	 * @brief Read an arithmetic value from a little-endian byte buffer
+	 * @details The ByteTransDataFormat2/4/8 functions normalize protocol bytes into a
+	 *          little-endian intermediate layout first, then this helper converts that
+	 *          stable layout into a C++ integer type without depending on host endianness.
+	 *          先把协议字节整理成统一的小端中间表示，再从这个中间表示中读取整数值，
+	 *          从而避免依赖宿主机字节序。
+	 * @param buffer Little-endian intermediate byte buffer (小端中间字节缓冲区)
+	 * @return Parsed integer value (解析后的整数值)
+	 */
+	template <typename T>
+	static T FromLittleEndianBuffer(const QByteArray &buffer)
+	{
+		return qFromLittleEndian<T>(reinterpret_cast<const uchar *>(buffer.constData()));
+	}
+
+	/**
+	 * @brief Read a floating-point value from a little-endian byte buffer
+	 * @details Floating-point values are handled in two steps:
+	 *          1. Read the raw bit pattern as an unsigned integer from little-endian bytes.
+	 *          2. Reinterpret that bit pattern as float/double via memcpy.
+	 *          这样可以把“字节序处理”和“浮点值解释”分开，逻辑更稳定，也不依赖宿主机字节序。
+	 * @param buffer Little-endian intermediate byte buffer (小端中间字节缓冲区)
+	 * @return Parsed floating-point value (解析后的浮点值)
+	 */
+	template <typename TFloat, typename TInt>
+	static TFloat FromLittleEndianFloat(const QByteArray &buffer)
+	{
+		TInt bits = FromLittleEndianBuffer<TInt>(buffer);
+		TFloat value = 0;
+		std::memcpy(&value, &bits, sizeof(TFloat));
+		return value;
+	}
+
+	/**
+	 * @brief Write an arithmetic value into a little-endian byte buffer
+	 * @details This helper produces a host-independent little-endian intermediate layout.
+	 *          After that, ByteTransDataFormat2/4/8 can reorder the bytes into the target
+	 *          protocol format such as ABCD / DCBA / BADC / CDAB.
+	 *          先生成稳定的小端中间表示，再交给 ByteTransDataFormat2/4/8 做协议字节重排。
+	 * @param value Input integer value (输入整数值)
+	 * @return Little-endian intermediate byte buffer (小端中间字节缓冲区)
+	 */
+	template <typename T>
+	static QByteArray ToLittleEndianBuffer(T value)
+	{
+		QByteArray bytes(sizeof(T), 0);
+		qToLittleEndian<T>(value, reinterpret_cast<uchar *>(bytes.data()));
+		return bytes;
+	}
+
+	/**
+	 * @brief Write a floating-point value into a little-endian byte buffer
+	 * @details Floating-point values are first converted to their raw bit pattern, then
+	 *          that bit pattern is written as little-endian bytes. This keeps float/double
+	 *          on the same conversion pipeline as integers.
+	 *          先取出 float/double 的原始位模式，再按小端整数写入字节数组。
+	 * @param value Input floating-point value (输入浮点值)
+	 * @return Little-endian intermediate byte buffer (小端中间字节缓冲区)
+	 */
+	template <typename TFloat, typename TInt>
+	static QByteArray ToLittleEndianFloatBuffer(TFloat value)
+	{
+		TInt bits = 0;
+		std::memcpy(&bits, &value, sizeof(TFloat));
+		return ToLittleEndianBuffer(bits);
+	}
+
+	/**
+	 * @brief Build a little-endian intermediate buffer for testConversion
+	 * @details testConversion needs a "host-independent original byte sequence" before
+	 *          applying ByteTransDataFormat2/4/8 twice. Integers and floating-point values
+	 *          are dispatched to different helpers here only because their bit extraction differs.
+	 *          这里专门给 testConversion 使用，目的是先构造一个与宿主机无关的原始小端字节序列。
+	 * @param value Original test value (原始测试值)
+	 * @return Little-endian intermediate byte buffer (小端中间字节缓冲区)
+	 */
+	template <typename T>
+	QByteArray ToLittleEndianTestBuffer(T value) const
+	{
+		if constexpr (std::is_floating_point_v<T>)
+		{
+			if constexpr (sizeof(T) == sizeof(quint32))
+				return ToLittleEndianFloatBuffer<T, quint32>(value);
+			else
+				return ToLittleEndianFloatBuffer<T, quint64>(value);
+		}
+		else
+		{
+			return ToLittleEndianBuffer(value);
+		}
+	}
+
+	/**
+	 * @brief Recover a value from the little-endian intermediate buffer for testConversion
+	 * @details This is the reverse operation of ToLittleEndianTestBuffer, used only by
+	 *          testConversion to verify that applying the same ByteTransDataFormat twice
+	 *          restores the original value.
+	 *          这是 ToLittleEndianTestBuffer 的逆过程，仅用于测试“双重转换后是否还原”。
+	 * @param buffer Little-endian intermediate byte buffer (小端中间字节缓冲区)
+	 * @return Recovered value (还原后的值)
+	 */
+	template <typename T>
+	T FromLittleEndianTestBuffer(const QByteArray &buffer) const
+	{
+		if constexpr (std::is_floating_point_v<T>)
+		{
+			if constexpr (sizeof(T) == sizeof(quint32))
+				return FromLittleEndianFloat<T, quint32>(buffer);
+			else
+				return FromLittleEndianFloat<T, quint64>(buffer);
+		}
+		else
+		{
+			return FromLittleEndianBuffer<T>(buffer);
+		}
+	}
+
 	/**
 	 * @brief Reverses the byte order of the input QByteArray in pairs (i.e., by word).
 	 *

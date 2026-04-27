@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 #endif // 测试不同大小和不同格式的数据转换的可逆性
 
 #if 1 // Modbus-TCP测试
-	QScopedPointer<ModbusTcpNet> modbusTcp(new ModbusTcpNet("192.168.0.103", 502, true, true));
+    QScopedPointer<ModbusTcpNet> modbusTcp(new ModbusTcpNet("192.168.0.103", 502, true, true));
 	modbusTcp->setDataFormat(DataFormat::ABCD);
 	modbusTcp->setIsOneBaseAddress(true);
 	// 写ushort
