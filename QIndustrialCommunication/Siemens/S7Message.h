@@ -7,17 +7,21 @@ class S7Message
 public:
 	S7Message()
 		: protocolHeadBytesLength(4)
-	{}
+	{
+	}
 
 	/**
-	 * @brief ÑéÖ¤×Ö½ÚÍ·ÊÇ·ñÓĞĞ§
-	 * @return ÓĞĞ§ - true ÎŞĞ§ - false
+	 * @brief éªŒè¯å­—èŠ‚å¤´æ˜¯å¦æœ‰æ•ˆ
+	 * @return æœ‰æ•ˆ - true æ— æ•ˆ - false
 	 */
 	bool validHeadBytes()
 	{
-		if (headBytes.isEmpty()) return false;
-		if (headBytes.length() < 2) return false;
-		if (headBytes.at(0) == 3 && headBytes.at(1) == 0) return true;
+		if (headBytes.isEmpty())
+			return false;
+		if (headBytes.length() < 2)
+			return false;
+		if (headBytes.at(0) == 3 && headBytes.at(1) == 0)
+			return true;
 		return false;
 	}
 
